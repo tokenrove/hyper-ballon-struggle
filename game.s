@@ -132,7 +132,6 @@ game_loop:
 0:	@ Initialize this level
 
 	@ Initialize actor structures
-	mov r0
 	ldr r0, =n_actors
 	mov r1, #2
 	strb r1, [r0]
