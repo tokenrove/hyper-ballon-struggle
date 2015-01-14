@@ -1,0 +1,24 @@
+
+* Hyper Ballon Struggle
+
+[[what.png]]
+
+This is my first [[http://onegameamonth.com/][#1GAM]] game: Hyper Ballon Struggle for the Gameboy
+Advance.  This is actually a game that was written the weekend of July
+26-28, 2002 during a party of some sort.  Unfortunately later copies
+of the source are so far unavailable, so I've decided to work from
+this copy which seems to be a CVS checkout from early on Sunday.
+
+** Building
+
+On a Debian system, you can do this to get a suitable cross-compiler
+installed:
+
+#+BEGIN_EXAMPLE
+dpkg --add-architecture armel
+apt-get update
+apt-get install gcc-4.9-arm-gnueabi
+#+END_EXAMPLE
+
+Then build with ~make~.  Any GBA emulator should be able to play the
+resulting bin file.
