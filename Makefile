@@ -20,4 +20,4 @@ main.bin: main
 	$(OBJCOPY) -Obinary $^ $@
 
 clean:
-	$(RM) *.o main
+	$(RM) *.o main main.bin

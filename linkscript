@@ -15,27 +15,28 @@ ENTRY(_start)
 MEMORY
 {
     rom (rx)   : o = 0x8000000, l = 4M
-    iwram (wx) : o = 0x3000000, l = 32K
-    ewram (wx) : o = 0x2000000, l = 256K
+    iwram (!r) : o = 0x3000000, l = 32K
+    ewram (!r) : o = 0x2000000, l = 256K
 }
 
 
 SECTIONS
 {
     .text : {
-	*(.text .rodata)
+        *(.text .rodata)
 	. = ALIGN(4);
     } >rom
 
     .ewram : {
-	*(.ewram)
+        *(.ewram .data .bss)
 	. = ALIGN(4);
-    } >ewram
+    } >ewram AT>rom
 
     .iwram : {
-	*(.iwram)
+        *(.iwram)
 	. = ALIGN(4);
-    } >iwram
+    } >iwram AT>rom
+
     .iwram_code : {
 	__iwram_code_start = .;
 	*(.iwram_code)

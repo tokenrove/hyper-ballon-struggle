@@ -12,26 +12,28 @@
 @   Program entry point on boot.  Sets up stacks, et cetera.
 @
 	.global _start, boot_type, slave_idx
-_start: bal 0f
-	@ ROM header
-	.fill 156,1,0		    @ XXX should be big N's logo
-	.string "Convergence"	    @ title, must be 12 characters
-	.byte 0,0,0,0
+_start: b 0f
+        @@ ROM header
+        .fill 156,1,0		    @ XXX should be big N's logo
+        @@ 16 characters: game title
+        .asciz "Hyper Ballon St"
+        @@ metadata
 	.byte 0,0		    @ maker code?
-	.byte 0x96,0,0,0,0,0,0,0,0,0
-	.byte 0
+        .byte 0x96
+        .byte 0,0                   @ main unit, device
+        .fill 7,1,0                 @ unused
+        .byte 0                     @ version
 	.byte 0xf0		    @ complement check
 	.byte 0,0		    @ checksum
-	.align
-0:	bal 1f			    @ XXX for positioning
+        .align 2
+0:	b 1f			    @ XXX for positioning
 
 boot_type: .byte 0		    @ booted by rom by default
 slave_idx: .byte 0		    @ master by default
-	@ XXX should there be some extra stuff here for multiboot?
-	.align
+        .fill 26,1,0
+        .align 2
 
-
-	@ Setup stacks.
+        @@ Setup stacks.
 .equ interrupt_sp, 0x3008000-0x60   @ 64 bytes for interrupt stack
 .equ user_sp,      0x3008000-0x100
 
@@ -39,7 +41,7 @@ slave_idx: .byte 0		    @ master by default
 	msr cpsr, r0
 	ldr sp, =interrupt_sp	    @ set the stack used during interrupts
 
-	mov r0, #0b11111	    @ system mode
+        mov r0, #0b10000            @ user mode
 	msr cpsr, r0
 	ldr sp, =user_sp	    @ set the stack used during user mode
 

@@ -31,7 +31,7 @@
 .equ outcome_complete, 0
 .equ outcome_death, 1
 
-	.section .data
+        .section .iwram
 	.align
 
 @ Key debounce
