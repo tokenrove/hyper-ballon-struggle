@@ -1,0 +1,56 @@
+
+
+* Art resources, as I found them
+
+| File          | Description                                                   |
+|---------------+---------------------------------------------------------------|
+| ball[1-7].pcx | Balloons                                                      |
+| ball[12]e.pcx | Balloon popping                                               |
+| bang[12].pcx  | ? Some kind of two-frame explosion                            |
+| bg.pcx        | A bad title screen.  Should be ditched.                       |
+| blank.pcx     | Blank tile                                                    |
+| brick.pcx     | Square brick tile                                             |
+| dirt.pcx      | Dirt tile                                                     |
+| dude*b.pcx    | "Bumped" frame                                                |
+| dude*d.pcx    | Dying frame                                                   |
+| dude*r.pcx    | Regular flying frame                                          |
+| dude*v.pcx    | Victory frame                                                 |
+| dude1*.pcx    | Retsyn / Dude                                                 |
+| dude2*.pcx    | Monk guy?                                                     |
+| dude3*.pcx    | Alien ant                                                     |
+| dude4*.pcx    | Octopus thing (which did have a name)                         |
+| dude5*.pcx    | Blue-haired dude holding balloons (no basket)                 |
+| dude6*.pcx    | Pink-haired chick, no basket                                  |
+| dude7*.pcx    | Myravist in gravy boat                                        |
+| dude8*.pcx    | Caveman guy (Randy?)                                          |
+| dude9*.pcx    | smiling head with a monocle                                   |
+| dude10*.pcx   | dead guy hung from balloons                                   |
+| dude11*.pcx   | same, different colors                                        |
+| grass*.pcx    | grass tiles (e is an end piece)                               |
+| hbspal.pcx    | an image to indicate where palette variations happen on dudes |
+| level0.pcx    | a complete level image                                        |
+| title.pcx     | a different title image, worse than bg.pcx                    |
+| what.pcx      | a composite piece to show elements together                   |
+|---------------+---------------------------------------------------------------|
+
+Palette layout:
+0-7: fixed? colors
+8-15: two four-color groups of variations, from dark to light,
+luminance 30, 62, 94, and 126, respectively.
+
+| 0 | transparent |
+| 1 | 8 8 8       |
+| 2 | 88 88 88    |
+| 3 | 168 168 168 |
+| 4 | 252 252 248 |
+| 5 | 124 120 60  |
+| 6 | 176 172 104 |
+| 7 | 228 224 152 |
+
+Balloonist frames are 16x16; balloons and tiles are 8x8.
+
+The tilemap ~hbs.map~ was probably produced with ~timhe~, but it's not
+exactly clear what the layout is (looks like 32x32 with 8x8 tiles, but
+there are still some other bytes whose purpose I don't recall).  It
+will probably be faster to import ~mortimer~ from Convergence and use
+it to produce a background from the existing tiles.
