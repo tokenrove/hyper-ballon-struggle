@@ -8,16 +8,36 @@ OBJCOPY=/usr/arm-linux-gnueabi/bin/objcopy
 
 .PHONY: default clean
 
-default: main.bin
+default: mortimer roz main.bin
 
 SRCOBJS=start.o main.o dma.o gfx.o util.o game.o font.o
-DATAOBJS=palette.o dude.data.o balloon.data.o fontdat.o
+DATAOBJS=palette.o dude.o fontdat.o
+
+%.raw: %.pcx
+	./roz $^
+
+dude.s: data/dude10r.raw data/ball2.raw
 
 main: $(SRCOBJS) $(DATAOBJS)
 	$(LD) -T linkscript $^ -o $@
 
 main.bin: main
 	$(OBJCOPY) -Obinary $^ $@
+
+%.cmx: %.ml
+	ocamlopt -c -I tools $<
+
+%.cmi: %.mli
+	ocamlopt -c -I tools $<
+
+tools/pcx.cmx: tools/pcx.cmi
+tools/tile.cmx: tools/tile.cmi
+
+mortimer: tools/pcx.cmx tools/tile.cmx tools/mortimer.ml
+	ocamlopt -I tools $^ -o mortimer
+
+roz: tools/pcx.cmx tools/tile.cmx tools/roz.ml
+	ocamlopt -I tools $^ -o roz
 
 clean:
 	$(RM) *.o main main.bin

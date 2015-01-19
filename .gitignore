@@ -1,5 +1,22 @@
+# emacs backups
 *~
 
+# C and asm objects
 *.o
+
+# output binaries
 main
 main.bin
+mortimer
+roz
+
+# ocaml intermediaries
+*.cmx
+*.cmi
+*.cmo
+
+# raw data
+*.raw
+*.pal
+*.tiles
+*.map
