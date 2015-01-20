@@ -189,6 +189,15 @@ let main unit =
 	);
     in
 
+    let add_empty_tile () =
+        let t = String.make 64 (Char.chr 0) in
+        TileHashtbl.add table t 0;
+        tiles.(!idx) <- t;
+        incr idx
+    in
+    (* Force the first tile to be blank; a tile collision hack. *)
+    add_empty_tile ();
+
     List.iter proc_file files;
 
     Printf.printf "final idx: %d\n" !idx;
