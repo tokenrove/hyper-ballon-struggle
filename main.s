@@ -8,102 +8,110 @@
 	.align
 
 	.include "gba.inc"
+        .include "constants.inc"
 
 @ main
 @   program entry point.  never returns.
 	.global main
 main:
-	@ currently we run the whole game in the in-game mode
-	bl game_init
-	bl menu_loop
-0:	b 0b
+        @@ initialize things
+        bl init
+@@@ FOREVER
+forever:
+        @@ call the title sequence
+        bl title_screen
+
+        @@ title can return either START or DEMO, but we haven't
+        @@ implemented demo mode.
+
+        @@ call the select screen
+        bl select_character
+        @@ we get back r0 (selected character archetype) and r1 (palette)
+
+        @@ while there are more opponents to challenge, challenge them
+metagame:
+        @@ select next opponent
+        @@ select an arena
+        @@ call challenge
+        bl challenge
+        @@ call play_game(us, color, them, color, arena)
+        stmfd sp!, {r0,r1}
+        bl play_game
+        @@ we get back an outcome r0 -- lose or win
+        mov r5, r0
+        ldmfd sp!, {r0,r1}
+        cmp r5, #OUTCOME_LOSE
+        beq game_over
+
+        bl victory
+
+        @@ are there more opponents?
+        ldr r1, =levels_end     @ &levels_len is also the end of levels
+        cmp r0, r1
+        blt metagame
+
+        @@ if you got here, you won!  congratulations!
+        bl roll_credits
+        b forever
+
+game_over:
+        bl display_gameover
+        b forever
 @ EOR main
 
+        .local init
+init:
+        stmfd sp!, {lr}
+        bl gfx_set_mode_1
 
-@ menu_loop
-@
-menu_loop:
-	stmfd sp!, {lr}
-	@ Start the game...
-	bl char_select
-	bl game_loop
-	ldmfd sp!, {lr}
-	bx lr
-@ EOR menu_loop
+        @ Wipe VRAM
+        mov r0, #vram_base
+        mov r1, #0x18000
+        mov r2, #0
+1:	str r2, [r0], #4
+        subs r1, r1, #4
+        bne 1b
 
+        @ Setup fonts
+        bl font_load
 
-@ char_select
-@   Character select screen.  Returns the type and palette chosen in r0
-@   and r1.
-char_select:
-	stmfd sp!, {lr}
+        @ Set a blue background
+        mov r0, #palram_base
+        mov r1, #0x005e
+        strh r1, [r0]
+        mov r1, #0x7e00
+        strh r1, [r0], #2
 
-	@ Wipe the screen
+        @@ Load sprites into VRAM
+        @@ We just dump everything in, because we are lazy and don't
+        @@ have a lot of data.  If this grows, we'll need to instead
+        @@ dynamically copy sprite tiles into VRAM as we need them.
+        mov r0, #vram_base
+        add r0, r0, #0x10000
+        ldr r1, =sprite_data_begin
+        ldr r2, =sprite_data_end
+        sub r2, r2, r1
+        bl memcpy_h
 
+        @ Load sprite palette
+        ldr r0, =sprite_palette
+        bl gfx_set_spr_palette
 
-	mov r0, #0
-	mov r1, #0
+        ldmfd sp!, {pc}
 
-	@ Loop
-0:	bl gfx_wait_vblank
-	ldr r0, =char_select_topmsg
-	mov r1, #8
-	mov r2, #8
-	bl font_putstring
+        .section .rodata
 
-	@ For each archetype...
-	mov r3, #10
-	mov r4, #0
+.equ CHAR_RETSYN, 0
+.equ ARENA_DEFAULT, 0
 
-1:	ldr r0, =char_names
-	mov r1, #0
-	tst r4, #1
-	moveq r1, #96
-	add r1, r1, #8
-	mov r2, r4, lsr #1
-	add r2, r2, #2
-	mov r2, r2, lsl #4
-	bl font_putstring
-
-	add r4, r4, #1
-	subs r3, r3, #1
-	bne 1b
-
-	@ disable remaining sprites
-	stmfd sp!, {r0-r3}
-	mov r0, #0
-	bl gfx_disable_sprites
-	ldmfd sp!, {r0-r3}
-
-	@ Check input
-	mov r2, #reg_base
-	add r2, r2, #0x130	@ REG_KEY
-	ldrh r3, [r2]
-
-	tst r3, #0x100		@ R trigger
-	bne 1f	
-	add r1, r1, #1		@ next palette
-	and r1, r1, #0xf
-
-1:	tst r3, #0x200		@ L trigger
-	bne 1f
-	sub r1, r1, #1		@ previous palette
-	and r1, r1, #0xf
-
-1:	tst r3, #0b1000		@ start button
-	beq 9f
-
-	b 0b
-
-9:	ldmfd sp!, {lr}
-	bx lr
-@ EOR char_select
-
-
-	.section .rodata
-	.align
-
-char_select_topmsg: .string "Select Warrior"
-char_names: .string "Dude"
+        @@ levels format:
+        @@ one byte each: character, palette, alt. palette, arena
+        .align
+levels:
+        .byte CHAR_RETSYN
+        .byte 0
+        .byte 1
+        .byte ARENA_DEFAULT
+levels_end:
 
 @ EOF main.s

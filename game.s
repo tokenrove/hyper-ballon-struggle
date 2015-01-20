@@ -3,6 +3,8 @@
 @ core game logic
 @
 
+        .include "constants.inc"
+
 @ ---
 @ Equates
 @ ---
@@ -70,59 +72,10 @@
 
 	.include "gba.inc"
 
-@ game_init
-@   
-	.global game_init
-game_init:
-	stmfd sp!, {lr}
-	@ Setup our graphics modes
-	bl gfx_set_mode_1
-
-	@ Wipe VRAM
-	mov r0, #vram_base
-	mov r1, #0x18000
-	mov r2, #0
-1:	strh r2, [r0], #2
-	subs r1, r1, #2
-	bne 1b
-
-	@ Setup fonts
-	bl font_load
-
-	@ Set a blue background
-	mov r0, #palram_base
-	mov r1, #0x005e
-	strh r1, [r0] 
-	mov r1, #0x7e00
-	strh r1, [r0], #2
-
-	@ Load sprites into VRAM
-	mov r0, #vram_base
-	add r0, r0, #0x10000
-	ldr r1, =balloon_sprite
-	ldr r2, =balloon_sprite_len
-	ldrh r2, [r2]
-	bl memcpy_h
-
-	ldr r1, =dude_sprite
-	ldr r2, =dude_sprite_len
-	ldrh r2, [r2]
-	bl memcpy_h
-
-	@ Load sprite palette
-	ldr r0, =sprite_palette
-	bl gfx_set_spr_palette
-
-	ldmfd sp!, {lr}
-	bx lr
-@ EOR game_init
-
-
-@ game_loop
-@
-	.global game_loop
-game_loop:
-	stmfd sp!, {lr}
+@@@ play_game(us, our color, them, their color, arena)
+        .global play_game
+play_game:
+        stmfd sp!, {r1-r12,lr}
 
 	@ r0 is the player type
 	@ r1 is the player's palette
@@ -189,23 +142,8 @@ game_loop:
 	subs r1, r1, #1
 	bne 1b
 
-	@ Run the core game loop
-	bl coreloop
-
-	@ Determine what to do based on the outcome.
-	@cmp r0, #outcome_complete
-	@b 0b
-	@cmp r0, #outcome_death
-
-	ldmfd sp!, {lr}
-	bx lr
-@ EOR gameloop
-
-
-@ coreloop
-@
+        @@ Run the core game loop
 coreloop:
-	stmfd sp!, {lr}
 0:	@ check input (do not call this if we are in demo mode)
 	bl human_input
 	@ process actors
@@ -314,8 +252,10 @@ coreloop:
 	@ loop forever
 	b 0b
 
-	ldmfd sp!, {lr}
-	bx lr
+@@@ We get here from the loop through the actors, where r2 is the pointer to the actor, and r8 is the number of actors left in the table.
+match_finished:
+        mov r0, #OUTCOME_LOSE
+        ldmfd sp!, {r1-r12,pc}
 @ EOR coreloop
 
 
@@ -395,7 +335,6 @@ human_input:
 
 @ update_physics
 @
-	.global update_physics
 update_physics:
 	stmfd sp!, {lr}
 	@ For each actor...
@@ -475,7 +414,6 @@ update_physics:
 
 @ check_collisions
 @
-	.global check_collisions
 check_collisions:
 	stmfd sp!, {lr}
 	ldr r0, =actors

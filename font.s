@@ -49,7 +49,7 @@ font_load:
 @
 	.global font_putstring
 font_putstring:
-	stmfd sp!,{r4-r10,lr}
+        stmfd sp!,{r0-r10,lr}
 
 	ldr r10, =font_xlat	@ ASCII translation table
 
@@ -76,7 +76,7 @@ font_putstring:
 
 	b 1b			@ rinse and repeat
 
-9:	ldmfd sp!,{r4-r10,lr}
+9:	ldmfd sp!,{r0-r10,lr}
 	bx lr
 @ EOR font_putstring
 
