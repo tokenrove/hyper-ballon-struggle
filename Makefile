@@ -14,11 +14,11 @@ SRCOBJS=start.o main.o dma.o gfx.o util.o game.o font.o \
   title.o select.o challenge.o victory.o gameover.o credits.o
 DATAOBJS=archetype.o fontdat.o
 
-%.raw: %.pcx
-	./roz $^
+%.raw: %.pcx roz
+	./roz $<
 
-%.map: %.pcx
-	./mortimer $^
+%.map: %.pcx mortimer
+	./mortimer $<
 
 archetype.o: data/retsyn_fly.raw data/retsyn_bump.raw data/retsyn_die.raw data/retsyn_win.raw data/monk_fly.raw data/monk_bump.raw data/monk_die.raw data/monk_win.raw data/alien_fly.raw data/alien_bump.raw data/alien_die.raw data/alien_win.raw data/octo_fly.raw data/octo_bump.raw data/octo_die.raw data/octo_win.raw data/dude_fly.raw data/dude_bump.raw data/dude_die.raw data/dude_win.raw data/dudette_fly.raw data/dudette_bump.raw data/dudette_die.raw data/dudette_win.raw data/myr_fly.raw data/myr_bump.raw data/myr_die.raw data/myr_win.raw data/randy_fly.raw data/randy_bump.raw data/randy_die.raw data/randy_win.raw data/monocle_fly.raw data/monocle_win.raw data/corpse_fly.raw data/corpse_bump.raw data/ball2.raw
 
@@ -50,4 +50,4 @@ roz: tools/pcx.cmx tools/tile.cmx tools/roz.ml
 	ocamlopt -I tools $^ -o roz
 
 clean:
-	$(RM) *.o main main.bin
+	$(RM) *.o data/*.raw data/*.map data/*.tiles data/*.pal mortimer roz tools/*.cmx tools/*.cmi main main.bin
