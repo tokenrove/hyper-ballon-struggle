@@ -77,10 +77,26 @@
 play_game:
         stmfd sp!, {r1-r12,lr}
 
-	@ r0 is the player type
-	@ r1 is the player's palette
+        @@ setup the background
+        mov r0, #REG_DISPCNT
+        mov r1, #0x40
+        orr r1, r1, #0b10111<<8	@ display sprites.
+        strh r1, [r0]
 
-	@ Set level to 0
+        mov r0, #vram_base
+        mov r1, #0x4000
+        bl zero_h
+
+        mov r0, #1
+        ldr r1, =arena_midground
+        bl copy_tilemap_to_vram_bg
+
+        mov r0, #2
+        ldr r1, =arena_background
+        bl copy_tilemap_to_vram_bg
+
+        ldr r0, =arena_pal
+        bl gfx_load_bg_palette
 
 0:	@ Initialize this level
 
@@ -133,14 +149,6 @@ play_game:
 	strh r1, [r0], #2
 	@ we don't touch the arbitrary state information
 	add r0, r0, #14
-
-	@ setup the background
-	mov r0, #vram_base
-	mov r1, #32*32/2
-	mov r2, #0
-1:	strh r2, [r0], #2
-	subs r1, r1, #1
-	bne 1b
 
         @@ Run the core game loop
 coreloop:
@@ -528,5 +536,21 @@ do_damage:
 1:	strb r2, [r0, #3]
 	ldmfd sp!, {pc}
 @ EOR do_damage
+
+        .section .rodata
+        .align 2
+arena_midground:
+        .byte 30, 20
+        .incbin "data/arena_default_mg.map"
+        .hword (1f - 0f)/64
+0: .incbin "data/arena_default_mg.tiles"
+1:
+arena_background:
+        .byte 30, 20
+        .incbin "data/arena_default_bg.map"
+        .hword (1f - 0f)/64
+0: .incbin "data/arena_default_bg.tiles"
+1:
+arena_pal:      .incbin "data/arena_default_mg.pal"
 
 @ EOF game.s

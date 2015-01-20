@@ -62,6 +62,7 @@ game_over:
         .local init
 init:
         stmfd sp!, {lr}
+        @@ as a default; every screen sets its own mode
         bl gfx_set_mode_1
 
         @ Wipe VRAM

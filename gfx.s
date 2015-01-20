@@ -20,7 +20,7 @@ gfx_set_mode_1:
 	strh r1, [r0]
 
 	@ Setup the background registers
-	mov r1, #0b00000100
+        mov r1, #0b00000100
 	strh r1, [r0, #8]	@ REG_BG0
 	mov r1, #0
 	strh r1, [r0, #0x10]	@ REG_BG0SCX
@@ -210,5 +210,63 @@ gfx_disable_sprites:
 	blt 1b
 	bx lr
 @ EOR gfx_disable_sprites
+
+@@@ copy_tilemap_to_vram_bg
+@@@ Assumes background is set to 32x32.
+@@@
+@@@ r0 = BG#
+@@@ r1 = tilemap address
+@@@      format is:
+@@@       width,height : u8 -- in tiles
+@@@       map data : w*h u16s
+@@@       n tiles : u16
+@@@       tile data: 64*n u8s
+@@@
+@@@ XXX should use DMA copying all over here
+        .global copy_tilemap_to_vram_bg
+copy_tilemap_to_vram_bg:
+        stmfd sp!, {r2-r5,lr}
+        @@ calculate map bank
+        mov r4, #0x800
+        mul r4, r0, r4
+        add r4, #vram_base
+        @@ if width = 32, copy everything at once; otherwise, copy
+        @@ scanlines at a time
+        ldrb r2, [r1], #1
+        ldrb r3, [r1], #1
+        cmp r2, #32
+        bne .Lscanline_copy
+
+        lsl r3, r3, #6
+1:      ldrh r5, [r1], #2
+        strh r5, [r4], #2
+        subs r3, r3, #2
+        bgt 1b
+        b .Lcopy_tiles
+
+.Lscanline_copy:
+        lsl r2, r2, #1
+0:      mov r6, r2
+1:      ldrh r5, [r1], #2
+        strh r5, [r4], #2
+        subs r6, r6, #2
+        bgt 1b
+        rsb r6, r2, #64
+        add r4, r4, r6
+        subs r3, r3, #1
+        bgt 0b
+
+.Lcopy_tiles:
+        @@ calculate tile bank
+        mov r4, #0x4000
+        mul r0, r4, r0
+        add r0, #vram_base
+        add r0, r0, #0x4000
+        @@ copy in tiles
+        ldrh r2, [r1], #2
+        lsl r2, r2, #6
+        bl memcpy_h
+
+        ldmfd sp!, {r2-r5,pc}
 
 @ EOF gfx.s

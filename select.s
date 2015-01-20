@@ -11,8 +11,22 @@ select_character:
         stmfd sp!, {lr}
 
         @ Wipe the screen
-        mov r0, #0
-        mov r1, #0
+        mov r0, #REG_DISPCNT
+        mov r1, #0x41
+        orr r1, r1, #0b10101<<8
+        strh r1, [r0]
+
+        @@ setup the background
+        mov r0, #vram_base
+        mov r1, #0x4000
+        bl zero_h
+
+        @@ Set a blue background
+        mov r0, #palram_base
+        mov r1, #0x005e
+        strh r1, [r0]
+        mov r1, #0x7e00
+        strh r1, [r0], #2
 
         @ Loop
 0:      bl gfx_wait_vblank
@@ -67,8 +81,8 @@ select_character:
 
         @ Check input
         mov r2, #reg_base
-        add r2, r2, #0x130	@ REG_KEY
-        ldrh r3, [r2]
+        add r2, r2, #0x130
+        ldrh r3, [r2]   @ REG_KEY
 
         tst r3, #0x100		@ R trigger
         bne 1f
@@ -81,13 +95,9 @@ select_character:
         and r1, r1, #0xf
 
 1:	tst r3, #0b1000		@ start button
-        beq 9f
+        bne 0b
 
-        b 0b
-
-9:	ldmfd sp!, {lr}
-        bx lr
-@ EOR char_select
+        ldmfd sp!, {pc}
 
 
         .section .rodata

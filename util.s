@@ -19,6 +19,39 @@ memcpy_h:
 	bgt 1b
 	@ Return
 	bx lr
-@ EOR memcpy_h
+
+        .global zero_h
+zero_h:
+        mov r2, #0
+1:      strh r2,[r0],#2
+        subs r1,r1,#2
+        bgt 1b
+        @ Return
+        bx lr
+
+        .include "gba.inc"
+        .global wait_for_start_toggled
+        @@ wait for user to press and release start
+wait_for_start_toggled:
+        stmfd sp!, {lr}
+0:
+        bl gfx_wait_vblank
+
+        mov r2, #reg_base
+        add r2, r2, #0x130
+        ldrh r3, [r2]   @ REG_KEY
+        tst r3, #0b1000		@ start button
+        bne 0b
+
+1:      bl gfx_wait_vblank
+
+        mov r2, #reg_base
+        add r2, r2, #0x130
+        ldrh r3, [r2]   @ REG_KEY
+        tst r3, #0b1000		@ start button
+        beq 1b
+
+        ldmfd sp!, {pc}
+
 
 @ EOF util.s
