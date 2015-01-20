@@ -542,13 +542,13 @@ do_damage:
 arena_midground:
         .byte 30, 20
         .incbin "data/arena_default_mg.map"
-        .hword (1f - 0f)/64
+        .hword (1f - 0f)/32
 0: .incbin "data/arena_default_mg.tiles"
 1:
 arena_background:
         .byte 30, 20
         .incbin "data/arena_default_bg.map"
-        .hword (1f - 0f)/64
+        .hword (1f - 0f)/32
 0: .incbin "data/arena_default_bg.tiles"
 1:
 arena_pal:      .incbin "data/arena_default_mg.pal"

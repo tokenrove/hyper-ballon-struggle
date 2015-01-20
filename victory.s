@@ -32,7 +32,7 @@ victory:
 victory_tilemap:
         .byte 30, 20
         .incbin "data/victory.map"
-        .hword (.Ltiles_end - .Ltiles)/64
+        .hword (.Ltiles_end - .Ltiles)/32
 .Ltiles:    .incbin "data/victory.tiles"
 .Ltiles_end:
 victory_pal:      .incbin "data/victory.pal"

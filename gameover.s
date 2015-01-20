@@ -29,7 +29,7 @@ display_gameover:
 gameover_tilemap:
         .byte 30, 20
         .incbin "data/gameover.map"
-        .hword (.Ltiles_end - .Ltiles)/64
+        .hword (.Ltiles_end - .Ltiles)/32
 .Ltiles:    .incbin "data/gameover.tiles"
 .Ltiles_end:
 gameover_pal:      .incbin "data/gameover.pal"

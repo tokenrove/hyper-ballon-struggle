@@ -264,7 +264,7 @@ copy_tilemap_to_vram_bg:
         add r0, r0, #0x4000
         @@ copy in tiles
         ldrh r2, [r1], #2
-        lsl r2, r2, #6
+        lsl r2, r2, #5
         bl memcpy_h
 
         ldmfd sp!, {r2-r5,pc}

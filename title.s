@@ -34,7 +34,7 @@ title_screen:
 title_tilemap:
         .byte 30, 20
         .incbin "data/title.map"
-        .hword (.Ltiles_end - .Ltiles)/64
+        .hword (.Ltiles_end - .Ltiles)/32
 .Ltiles:    .incbin "data/title.tiles"
 .Ltiles_end:
 title_pal:      .incbin "data/title.pal"
