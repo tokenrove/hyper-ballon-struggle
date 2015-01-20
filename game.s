@@ -406,7 +406,33 @@ update_physics:
 	movlt r2, #0
 	movlt r1, #0
 	strh r2, [r0, #4]
-	strh r1, [r0, #8]
+        strh r1, [r0, #8]
+
+        @@ collide with playfield
+        ldrsh r1, [r0, #4]	@ x position
+        ldrsh r2, [r0, #6]	@ y position
+        mov r2, r2, lsr #3
+        mov r1, r1, lsr #3
+        ldr r3, =arena_midground
+        ldrb r4, [r3], #2       @ width of map
+        mla r4, r2, r4, r1
+        lsl r4, r4, #1
+        ldrh r4, [r3, r4]
+        cmp r4, #0
+        beq 1f
+
+        @@ mov r1, r1, lsl #3
+        mov r2, r2, lsl #3
+        ldrsh r4, [r0, #10]      @ y velocity
+        cmp r4, #0
+        addlt r2, r2, #8
+        subgt r2, r2, #16
+        @@ strh r1, [r0, #4]	@ x position
+        strh r2, [r0, #6]	@ y position
+        mov r4, #0
+        strh r4, [r0, #8]	@ x velocity
+        strh r4, [r0, #10]      @ y velocity
+1:
 
 	@ apply friction to velocity
 	ldrsh r1, [r0, #8]	@ x velocity
