@@ -216,11 +216,14 @@ coreloop:
 	tst r1, #3
 	addeq r6, r6, #1
 	subne r6, r6, #1
-	
-	@     render balloon to oam
-	mov r1, r6	    @ y
-	strh r1, [r0], #2
-	mov r1, r5	    @ x
+
+        @@ render balloon to oam
+        mov r1, r6	    @ y
+        and r1, r1, #255
+        strh r1, [r0], #2
+        mov r1, #512
+        sub r1, r1, #1
+        and r1, r5, r1	    @ x
 	strh r1, [r0], #2
 	@ FIXME add palette switching and such here
 	@ also make priority random
@@ -235,7 +238,7 @@ coreloop:
 	subs r4, r4, #1
 	bne 2b
 
-	add r2, r2, #actor_len
+3:      add r2, r2, #actor_len
 	subs r8, r8, #1
 	bne 1b
 
