@@ -24,8 +24,7 @@ archetype_table:
         .byte 1,5,9,13
         .word retsyn_fly, retsyn_bump, retsyn_die, retsyn_win
 
-        .asciz "Monk?"
-        .balign 8
+        .asciz "Rudolph"
         .byte 1                 @ strength
         .byte 1                 @ stamina
         .byte 10                @ mass
@@ -33,7 +32,7 @@ archetype_table:
         .byte 17,21,25,29
         .word monk_fly, monk_bump, monk_die, monk_win
 
-        .asciz "Alien?"
+        .asciz "Ralph"
         .balign 8
         .byte 1                 @ strength
         .byte 1                 @ stamina
@@ -42,7 +41,7 @@ archetype_table:
         .byte 33,37,41,45
         .word alien_fly, alien_bump, alien_die, alien_win
 
-        .asciz "Octo?"
+        .asciz "Lopez"
         .balign 8
         .byte 1                 @ strength
         .byte 1                 @ stamina
@@ -51,7 +50,7 @@ archetype_table:
         .byte 49,53,57,61
         .word octo_fly, octo_bump, octo_die, octo_win
 
-        .asciz "Dude?"
+        .asciz "Pierce"
         .balign 8
         .byte 1                 @ strength
         .byte 1                 @ stamina
@@ -60,7 +59,7 @@ archetype_table:
         .byte 65,69,73,77
         .word dude_fly, dude_bump, dude_die, dude_win
 
-        .asciz "Dudette"
+        .asciz "Lana"
         .balign 8
         .byte 1                 @ strength
         .byte 1                 @ stamina
@@ -96,9 +95,8 @@ archetype_table:
         .byte 129,133,129,133
         .word monocle_fly, monocle_win, monocle_fly, monocle_win
 
-        .asciz "Corpse"
-        .balign 8
-        .byte 1                 @ strength
+        .ascii "Melville"
+        .byte 0                 @ strength; zero so it also terminates his long name
         .byte 1                 @ stamina
         .byte 10                @ mass
         .byte 0
