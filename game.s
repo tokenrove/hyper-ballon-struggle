@@ -118,7 +118,7 @@ play_game:
 	strb r1, [r0], #1
 	mov r1, #0x01	    @ mode
 	strb r1, [r0], #1
-	mov r1, #0x08	    @ n_balloons
+        mov r1, #0x04	    @ n_balloons
 	strb r1, [r0], #1
 	mov r1, #62	    @ x
 	strh r1, [r0], #2
@@ -197,7 +197,9 @@ coreloop:
 
 	@   set local driftx and drifty from global drift
 	@   for each of actor's balloons
-	ldrb r4, [r2, #3]   @ number of balloons
+        ldrb r4, [r2, #3]   @ number of balloons
+        cmp r4, #0
+        beq match_finished
 	ldrsh r5, [r2, #4]  @ player's x
 	@add r5, r5, #8
 	ldrsh r6, [r2, #6]  @ player's y
@@ -518,7 +520,7 @@ do_damage:
 	bne 1f
 
 	@ deal with popping
-	mov r2, #1
+        mov r2, #0
 
 1:	strb r2, [r0, #3]
 	ldmfd sp!, {pc}
