@@ -1,5 +1,85 @@
 
 
+* Activities and their resource allocations
+
+We boot into start; start calls main, which calls, in sequence:
+ - title
+ - select
+ - challenge
+ - game
+ - either victory or gameover, and finally credits
+
+** title
+
+BG1 is a static tilemap
+
+** select
+
+BG1 is our font layer
+BG2 will be a rotscale background at some point
+
+OAM:
+
+We have the selector arrow (16x16) followed by the first frame of each
+character.  If that character gets selected, we copy in their victory
+frame for a second.
+
+Palette 0 should be the selector arrow, followed by a palette for each
+visible character.  (If we add more characters, we'll have to
+implement pagination, and we won't have enough palettes for the
+non-visible characters.)
+
+** challenge
+
+Not implemented, but we want to have two BGs that slide together.
+
+Probably we can have one layer on top with VERSUS in huge letters, but
+with a sensible backdrop color, since the backdrop will show through
+under the slide-ins.  If we use BG2 for this, we can even do a
+rotscale effect on the VERSUS message (spin while scaling up).
+
+BG0 and BG1 will each have a diagonal and some player stuff drawn on
+them, but this can all be tiles.
+
+** game
+
+BG1 is the midground, where collision happens.  We might want some
+flexibility as to the other backgrounds, but we'll probably usually
+have at least a background, and possibly a foreground as well.  The
+background might be rotscale, although most won't be so most of the
+time we'll want to use a 4-bit tilemap for that.
+
+OAM:
+
+The first two tiles should be the two balloon states, since we will
+need both on screen at once.
+
+We'll copy in all the frames for our balloonists for the rest of the
+tiles (even if it means some duplication, since they are tiny compared
+to our available VRAM).
+
+Palette 1 and 2 should be balloonist 1 and 2's palettes,
+respectively.  Their balloons should use their palette.
+
+** victory
+
+One BG on top (above OBJ) for the message, and possibly a scrolling
+background (clouds?  stars?) below.
+
+Copy in both balloon states; draw balloons wafting upwards, pop when
+start is hit.
+
+** gameover
+
+Single BG tilemap for now.
+
+** credits
+
+We'll probably do some scrolling tilemap layers here.  Either include
+a nice font and do the credits as a font layer, or just write the
+credits as an image since there aren't many.
+
+
 * Art resources, as I found them
 
 | File          | Description                                                   |
