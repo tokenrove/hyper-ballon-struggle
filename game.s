@@ -561,7 +561,7 @@ check_collisions:
 @ do_damage(defender, attacker)
 @
 do_damage:
-	stmfd sp!, {lr}
+        stmfd sp!, {r0-r3,lr}
 	ldrb r2, [r0, #3]	@ n_balloons
 	subs r2, r2, #1
 	bne 1f
@@ -570,7 +570,14 @@ do_damage:
         mov r2, #0
 
 1:	strb r2, [r0, #3]
-	ldmfd sp!, {pc}
+
+        @@ make noise
+        mov r0, #3
+        mov r1, #0
+        mov r2, #0x510
+        bl music_play_sfx
+
+        ldmfd sp!, {r0-r3,pc}
 @ EOR do_damage
 
 @ EOF game.s

@@ -37,11 +37,11 @@ SECTIONS
 	. = ALIGN(4);
     } >iwram AT>rom
 
-    .iwram_code : {
+    .iwram_code . : {
 	__iwram_code_start = .;
 	*(.iwram_code)
 	. = ALIGN(4);
-    } >iwram AT>rom
+    } AT>rom
     __iwram_code_end = . + SIZEOF(.iwram_code);
     __iwram_code_lma = LOADADDR(.iwram_code);
 }

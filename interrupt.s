@@ -14,14 +14,14 @@ intr_init:
         ldr r1, =intr_handler
         str r1, [r0]
 
-        @@ Set IE: enable VBL, nothing else for now
+        @@ Set IE: enable VBL and TIMER1
         mov r0, #reg_base
         ldrh r1, [r0, #REG_STAT-reg_base]!
         orr r1, r1, #0b1001
         strh r1, [r0]
         add r0, r0, #REG_IE-REG_STAT
         ldrh r1, [r0]
-        orr r1, r1, #1
+        orr r1, r1, #0b10001
         strh r1, [r0]
 
         @@ Enable master interrupt flag
@@ -49,4 +49,10 @@ intr_handler:
         mov r1, #0x3000000
         orr r1, r1, #0x8000
         strh r3, [r1, #-0x8]    @ BIOS mirror of REG_IF
+        stmfd sp!, {lr}
+        tst r3, #0b10000        @ TIMER1
+        blne swap_pcm_buffers
+        tst r3, #0b1            @ VBL
+        blne music_update
+        ldmfd sp!, {lr}
         bx lr

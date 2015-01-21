@@ -12,6 +12,8 @@ title_screen:
         stmfd sp!, {lr}
 
         bl gfx_wait_vblank
+        ldr r0, =song_crazy_quest_data
+        bl music_play_song
 
         mov r0, #REG_DISPCNT
         mov r1, #0x0040		@ mode 0, 1D
@@ -27,6 +29,8 @@ title_screen:
         bl gfx_load_bg_palette
 
         bl wait_for_start_toggled
+        bl music_stop_song
+
         ldmfd sp!, {pc}
 
         .section .rodata

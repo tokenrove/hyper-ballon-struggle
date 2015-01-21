@@ -10,9 +10,12 @@ OBJCOPY=/usr/arm-linux-gnueabi/bin/objcopy
 
 default: mortimer roz main.bin
 
-SRCOBJS=start.o main.o dma.o gfx.o util.o interrupt.o font.o \
+SRCOBJS=start.o main.o dma.o gfx.o util.o interrupt.o font.o music.o \
 	game.o title.o select.o challenge.o victory.o gameover.o credits.o
-DATAOBJS=archetype.o fontdat.o arenas.o
+DATAOBJS=archetype.o fontdat.o arenas.o instruments.o mxtable.o testsong.o
+
+%.s: %.nws
+	notangle -L'.line %L%N' outline.nws $^ > $@
 
 %.raw: %.pcx roz
 	./roz $<

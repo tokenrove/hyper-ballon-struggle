@@ -99,6 +99,16 @@ init:
 
         bl intr_init
 
+        bl music_init
+
+        @ load music
+        mov r0, #0		    @ music idx
+        ldr r4, =music_table
+        add r4, r4, r0, lsl #2
+        ldr r4, [r4]
+        ldmia r4!, {r0-r3}
+        bl music_set_instruments
+
         @@ unblank the display
         ldr r0, =REG_DISPCNT
         ldrh r1, [r0]

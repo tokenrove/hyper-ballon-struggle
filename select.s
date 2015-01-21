@@ -97,6 +97,14 @@ select_character:
 1:	tst r3, #0b1000		@ start button
         bne 0b
 
+        @@ make noise
+        stmfd sp!, {r0-r2,lr}
+        mov r0, #3
+        mov r1, #0
+        ldr r2, =0b010000011000
+        bl music_play_sfx
+        ldmfd sp!, {r0-r2,lr}
+
         ldmfd sp!, {pc}
 
 
