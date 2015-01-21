@@ -10,8 +10,8 @@ OBJCOPY=/usr/arm-linux-gnueabi/bin/objcopy
 
 default: mortimer roz main.bin
 
-SRCOBJS=start.o main.o dma.o gfx.o util.o game.o font.o \
-  title.o select.o challenge.o victory.o gameover.o credits.o
+SRCOBJS=start.o main.o dma.o gfx.o util.o interrupt.o font.o \
+	game.o title.o select.o challenge.o victory.o gameover.o credits.o
 DATAOBJS=archetype.o fontdat.o arenas.o
 
 %.raw: %.pcx roz

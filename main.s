@@ -63,16 +63,14 @@ game_over:
         .local init
 init:
         stmfd sp!, {lr}
+        @@ disable video so we can write freely to VRAM
+        ldr r0, =REG_DISPCNT
+        ldrh r1, [r0]
+        orr r1, r1, #1<<7
+        strh r1, [r0]
+
         @@ as a default; every screen sets its own mode
         bl gfx_set_mode_1
-
-        @ Wipe VRAM
-        mov r0, #vram_base
-        mov r1, #0x18000
-        mov r2, #0
-1:	str r2, [r0], #4
-        subs r1, r1, #4
-        bne 1b
 
         @ Setup fonts
         bl font_load
@@ -98,6 +96,14 @@ init:
         @ Load sprite palette
         ldr r0, =sprite_palette
         bl gfx_set_spr_palette
+
+        bl intr_init
+
+        @@ unblank the display
+        ldr r0, =REG_DISPCNT
+        ldrh r1, [r0]
+        bic r1, r1, #1<<7
+        strh r1, [r0]
 
         ldmfd sp!, {pc}
 

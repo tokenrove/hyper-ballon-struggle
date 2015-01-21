@@ -85,13 +85,8 @@ gfx_enable_display:
 @
 	.global gfx_wait_vblank
 gfx_wait_vblank:
-	mov r0, #reg_base
-1:	ldrh r1, [r0, #6]	    @ REG_VCOUNT
-	cmp r1, #160		    @ vblank starts at scanline 160
-	bne 1b			    @ we want to hit it on the dot?
-	@ Return
-	bx lr
-@ EOR gfx_wait_vblank
+        swi #5<<16
+        bx lr
 
 
 @

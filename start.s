@@ -43,7 +43,10 @@ slave_idx: .byte 0		    @ master by default
 
         mov r0, #0b10000            @ user mode
 	msr cpsr, r0
-	ldr sp, =user_sp	    @ set the stack used during user mode
+        ldr sp, =user_sp	    @ set the stack used during user mode
+
+        mov r0, #255
+        swi #1<<16
 
 	@ Copy in anything that needs to go in IWRAM immediately.
 	ldr r0, =__iwram_code_start
