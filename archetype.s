@@ -4,13 +4,13 @@
 
 @@ Format of the archetypes table:
 @@
-@@   0  name, NUL-terminated    9 bytes
+@@   0  name, NUL-terminated    8 bytes
 @@@ strength
 @@@ stamina
 @@@ mass
 @@@ collision information
+@@@ palettes in two byte pairs
 @@@ ptr to frames (fly, bump, die, win)
-@@@ four palettes
 
         .global archetype_table, archetype_table_len
         .align 2
@@ -30,8 +30,8 @@ archetype_table:
         .byte 1                 @ stamina
         .byte 10                @ mass
         .byte 0
-        .byte PALETTE_RED, PALETTE_GREEN
-        .byte PALETTE_RED, PALETTE_BLUE
+        .byte PALETTE_RED, PALETTE_YELLOW
+        .byte PALETTE_GREEN, PALETTE_BLUE
         .word monk_fly, monk_bump, monk_die, monk_win
 
         .asciz "Ralph"
@@ -41,7 +41,7 @@ archetype_table:
         .byte 10                @ mass
         .byte 0
         .byte PALETTE_BLUE, PALETTE_GREEN
-        .byte PALETTE_BLUE, PALETTE_GREEN
+        .byte PALETTE_RED, PALETTE_PURPLE
         .word alien_fly, alien_bump, alien_die, alien_win
 
         .asciz "Lopez"
@@ -60,8 +60,8 @@ archetype_table:
         .byte 1                 @ stamina
         .byte 10                @ mass
         .byte 0
-        .byte PALETTE_BLUE, PALETTE_GREEN
-        .byte PALETTE_BLUE, PALETTE_GREEN
+        .byte PALETTE_GOTH, PALETTE_BLUE
+        .byte PALETTE_BLUE, PALETTE_YELLOW
         .word dude_fly, dude_bump, dude_die, dude_win
 
         .asciz "Lana"

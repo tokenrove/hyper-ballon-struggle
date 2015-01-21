@@ -6,6 +6,7 @@
         .global select_character
 
         .equ ARCHETYPES_ON_A_PAGE, 10
+        .equ ALTERNATE_PALETTES_MASK, 1
 
 @@@ Character select screen.  Returns the type and palette chosen in r0
 @@@ and r1.
@@ -36,7 +37,8 @@ select_character:
 
         bl copy_in_sprites
 
-        mov r6, #3              @ Cursor position
+        mov r6, #1              @ Cursor position (indexed from 1)
+        mov r7, #0              @ Selected palette
 
         @ Loop
 0:      bl gfx_wait_vblank
@@ -117,41 +119,61 @@ select_character:
 
         @ Check input
         ldr r2, =debounce
-        ldrh r3, [r2]
+        ldrh r4, [r2]
 
-        tst r3, #0x10           @ R
+        tst r4, #0x10           @ R
         beq 1f
+
+        mov r7, #0
+        bl load_new_palette_for_r6
         add r6, r6, #1
         cmp r6, #ARCHETYPES_ON_A_PAGE
         movgt r6, #1
+        b 2f
 
-1:      tst r3, #0x20           @ L
+1:      tst r4, #0x20           @ L
         beq 1f
+
+        mov r7, #0
+        bl load_new_palette_for_r6
         subs r6, r6, #1
         moveq r6, #ARCHETYPES_ON_A_PAGE
+        b 2f
 
-1:      tst r3, #0x40           @ U
+1:      tst r4, #0x40           @ U
         beq 1f
+
+        mov r7, #0
+        bl load_new_palette_for_r6
         subs r6, r6, #2
         addle r6, r6, #ARCHETYPES_ON_A_PAGE
+        b 2f
 
-1:      tst r3, #0x80           @ D
-        beq 1f
+1:      tst r4, #0x80           @ D
+        beq 2f
+
+        mov r7, #0
+        bl load_new_palette_for_r6
         add r6, r6, #2
         cmp r6, #ARCHETYPES_ON_A_PAGE
         subgt r6, r6, #ARCHETYPES_ON_A_PAGE
 
-1:      tst r3, #0x100		@ R trigger
+2:      tst r4, #0x100		@ R trigger
         beq 1f
-        add r1, r1, #1		@ next palette
-        and r1, r1, #0xf
 
-1:	tst r3, #0x200		@ L trigger
-        beq 1f
-        sub r1, r1, #1		@ previous palette
-        and r1, r1, #0xf
+        add r7, r7, #1
+        and r7, r7, #ALTERNATE_PALETTES_MASK
+        bl load_new_palette_for_r6
+        b 2f
 
-1:	tst r3, #0b1000		@ start button
+1:	tst r4, #0x200		@ L trigger
+        beq 2f
+
+        sub r7, r7, #1
+        and r7, r7, #ALTERNATE_PALETTES_MASK
+        bl load_new_palette_for_r6
+
+2:	tst r4, #0b1000		@ start button
         beq 0b
 
         @@ make noise
@@ -163,6 +185,33 @@ select_character:
         ldmfd sp!, {r0-r2,lr}
 
         ldmfd sp!, {pc}
+
+        @@ helper routine to find palette r7 for character r6 and pop
+        @@ it into palette RAM; steps on r0-r3 at least
+load_new_palette_for_r6:
+        ldr r2, =archetype_table
+        add r2, r2, r6, lsl #5
+        sub r2, r2, #32
+        add r2, r2, #12
+        add r2, r2, r7, lsl #1
+        ldrh r0, [r2]
+        and r1, r0, #0xff
+        lsr r0, r0, #8
+        ldr r2, =palette_table
+        add r3, r2, r0, lsl #3
+        add r2, r2, r1, lsl #3
+        mov r0, #palram_base
+        add r0, #0x200
+        add r0, r0, r6, lsl #5
+        ldr r1, [r2], #4
+        str r1, [r0, #16]!
+        ldr r1, [r2], #4
+        str r1, [r0, #4]!
+        ldr r1, [r3], #4
+        str r1, [r0, #4]!
+        ldr r1, [r3], #4
+        str r1, [r0, #4]!
+        bx lr
 
         @@ copy in sprites
         @@ we need a frame of each character, and the selector arrow
@@ -196,6 +245,7 @@ copy_in_sprites:
         ldrh r1, [r4], #4
         and r2, r1, #0xff
         add r2, r0, r2, lsl #3
+        @@ Think carefully about this if you ever have more than 32 palettes
         add r1, r0, r1, lsr #5
         ldmia r2, {r0,r3}
         stmia r7!, {r0,r3}
