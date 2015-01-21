@@ -34,14 +34,12 @@
 .equ outcome_death, 1
 
         .section .iwram
-	.align
+        .align 2
 
-@ Key debounce
-.lcomm debounce, 2
 @ Drift variables
 .lcomm drift, 2
 @ Number of actors
-.lcomm n_actors, 2
+.lcomm n_actors, 1
 @ Actor data
 @ 0	byte	palette
 @ 1	byte	type
@@ -63,8 +61,10 @@
 @ 18	byte	frame delay counter
 @ 19-32	bytes	arbitrary state information
 @ NOTE: Actor 0 is always the player.
+        .align 2
 .lcomm actors, actor_len*max_actors
 
+        .align 2
 .lcomm arena, 4
 
 
@@ -299,19 +299,17 @@ match_finished:
 @ FIXME replace raw compares with table lookups of player speeds
 @
 human_input:
-	stmfd sp!, {r4,lr}
-	ldr r2, =debounce
-	ldrh r4, [r2]
-	mov r0, #reg_base
-	add r0, r0, #0x130  @ REG_KEY
-	ldrh r1, [r0]
+        stmfd sp!, {r4,lr}
+        ldr r2, =key_input
+        ldrh r1, [r2], #2
+        ldrh r4, [r2]           @ debounce
 	@ NOTE: the human controllable player is always
 	@ actor zero.
 	ldr r2, =actors
 
-	tst r1, #0b10	    @ B button
-	bne 0f
-	tst r4, #0b10	    @ check debounce
+        @@ B button (flap)
+        tst r1, #0b10	    @ B button
+        tstne r4, #0b10	    @ check debounce
 	beq 0f
 	ldrsh r3, [r2, #14]  @ y acceleration
 	sub r3, r3, #16
@@ -360,12 +358,7 @@ human_input:
 9:	@tst r1, #0b01000000 @ up
 	@tst r1, #0b10000000 @ down
 
-	@ store debounce
-	ldr r2, =debounce
-	strh r1, [r2]
-
-	ldmfd sp!, {r4,lr}
-	bx lr
+        ldmfd sp!, {r4,pc}
 @ EOR human_input
 
 
@@ -471,8 +464,7 @@ update_physics:
 	subs r8, r8, #1
 	bne 0b
 
-	ldmfd sp!, {lr}
-	bx lr
+        ldmfd sp!, {pc}
 @ EOR update_physics
 
 
@@ -486,7 +478,7 @@ check_collisions:
 0:	@ For a in each actor...
 	ldr r1, =actors
 	ldr r3, =n_actors
-	ldr r3, [r3]
+        ldrb r3, [r3]
 	ldrsh r4, [r0, #4]	@ a's x coord
 	ldrsh r5, [r0, #6]	@ a's y coord
 1:	@   For b in each actor again...
@@ -568,8 +560,7 @@ check_collisions:
 	subs r2, r2, #1
 	bne 0b
 
-	ldmfd sp!, {lr}
-	bx lr
+        ldmfd sp!, {pc}
 @ EOR check_collisions
 
 

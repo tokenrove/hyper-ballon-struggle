@@ -116,31 +116,30 @@ select_character:
         blt 1b
 
         @ Check input
-        mov r2, #reg_base
-        add r2, r2, #0x130
-        ldrh r3, [r2]   @ REG_KEY
+        ldr r2, =debounce
+        ldrh r3, [r2]
 
         tst r3, #0x10           @ R
-        bne 1f
+        beq 1f
         add r6, r6, #1
         cmp r6, #ARCHETYPES_ON_A_PAGE
-        movge r6, #1
+        movgt r6, #1
 
 1:      tst r3, #0x20           @ L
-        bne 1f
+        beq 1f
         subs r6, r6, #1
         moveq r6, #ARCHETYPES_ON_A_PAGE
 
 1:      tst r3, #0x40           @ U
-        bne 1f
+        beq 1f
         subs r6, r6, #2
         addle r6, r6, #ARCHETYPES_ON_A_PAGE
 
 1:      tst r3, #0x80           @ D
-        bne 1f
+        beq 1f
         add r6, r6, #2
         cmp r6, #ARCHETYPES_ON_A_PAGE
-        subge r6, r6, #ARCHETYPES_ON_A_PAGE
+        subgt r6, r6, #ARCHETYPES_ON_A_PAGE
 
 1:      tst r3, #0x100		@ R trigger
         beq 1f
@@ -153,7 +152,7 @@ select_character:
         and r1, r1, #0xf
 
 1:	tst r3, #0b1000		@ start button
-        bne 0b
+        beq 0b
 
         @@ make noise
         stmfd sp!, {r0-r2,lr}

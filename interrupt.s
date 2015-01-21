@@ -30,6 +30,11 @@ intr_init:
 
         bx lr
 
+        .section .iwram
+        .align
+        .global key_input, debounce
+key_input:      .skip 2
+debounce:       .skip 2
 
         .section .iwram_code, "ax", %progbits
         .arm
@@ -53,6 +58,20 @@ intr_handler:
         tst r3, #0b10000        @ TIMER1
         blne swap_pcm_buffers
         tst r3, #0b1            @ VBL
-        blne music_update
-        ldmfd sp!, {lr}
+        bleq 0f
+        bl music_update
+        bl input_update
+0:      ldmfd sp!, {lr}
         bx lr
+
+        .local input_update
+input_update:
+        ldr r0, =REG_KEY
+        ldrh r0, [r0]
+        ldr r1, =key_input
+        ldrh r2, [r1]
+        mvn r2, r2
+        and r2, r0, r2
+        strh r0, [r1], #2
+        strh r2, [r1]
+        mov pc, lr
