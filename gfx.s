@@ -50,40 +50,8 @@ gfx_set_mode_1:
 @ EOR gfx_set_mode_1
 
 
-@ gfx_set_mode_4
-@   puts the gba in mode 4, enables sprites, sets palette
-	.global gfx_set_mode_4
-gfx_set_mode_4:
-	@ Setup the display controller
-	mov r0, #reg_base	@ REG_DISPCNT
-	mov r1, #0x0044		@ mode 4, one-d sprites
-	orr r1, r1, #0x1400	@ bg2, display sprites.
-	strh r1, [r0]
-	@ Setup a black palette
-	mov r0, #palram_base
-	mov r1, #0x0000		@ black
-	mov r2, #0xff
-1:	strh r1, [r0], #2
-	subs r2, r2, #1
-	bne 1b
-	@ Return
-	bx lr
-@ EOR gfx_set_mode_4
-
-
-@ gfx_enable_display
-@   turns on the display.
-	.global gfx_enable_display
-gfx_enable_display:
-	bx lr
-@ EOR gfx_enable_display
-
-
-@
-@ void gfx_wait_vblank(void) -- wait for _start of_ vertical blank.
-@ currently uses the very power-inefficient method of testing REG_VCOUNT
-@
-	.global gfx_wait_vblank
+@@@ Requires that interrupts be enabled.
+        .global gfx_wait_vblank
 gfx_wait_vblank:
         swi #5<<16
         bx lr
