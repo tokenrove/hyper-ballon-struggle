@@ -31,4 +31,20 @@ dma_copy16:
 	bx lr
 @ EOR dma_copy16
 
+        .global dma_zero32
+dma_zero32:
+        ldr r3, =REG_DMA3SRC
+        ldr r2, =zero
+        str r2, [r3], #4
+        str r0, [r3], #4
+        mov r1, r1, lsr #2
+        strh r1, [r3], #2
+        mov r0, #0x8500
+        strh r0, [r3]
+        bx lr
+
+        .section .iwram
+        .align 2
+.lcomm zero, 4
+
 @ EOF dma.s

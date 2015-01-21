@@ -93,7 +93,7 @@ play_game:
 
         mov r0, #vram_base
         mov r1, #0x4000
-        bl zero_h
+        bl dma_zero32
 
         mov r0, #1
         ldr r1, [r5,#8]

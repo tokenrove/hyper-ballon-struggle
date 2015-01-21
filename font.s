@@ -34,7 +34,7 @@ font_load:
 	ldr r2, =font_nchars
 	ldrb r2, [r2]
 	mov r2, r2, lsl #5	@ 32 bytes per character
-	bl memcpy_h
+        bl dma_copy32
 
 	@ Return
 	ldmfd sp!, {lr}

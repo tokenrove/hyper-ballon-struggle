@@ -19,7 +19,7 @@ select_character:
         @@ setup the background
         mov r0, #vram_base
         mov r1, #0x4000
-        bl zero_h
+        bl dma_zero32
 
         @@ Set a blue background
         mov r0, #palram_base

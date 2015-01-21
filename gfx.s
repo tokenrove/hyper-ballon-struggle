@@ -228,7 +228,7 @@ copy_tilemap_to_vram_bg:
         @@ copy in tiles
         ldrh r2, [r1], #2
         lsl r2, r2, #5
-        bl memcpy_h
+        bl dma_copy32
 
         ldmfd sp!, {r2-r5,pc}
 
