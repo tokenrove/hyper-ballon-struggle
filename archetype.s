@@ -21,7 +21,8 @@ archetype_table:
         .byte 1                 @ stamina
         .byte 10                @ mass
         .byte 0
-        .byte 1,5,9,13
+        .byte PALETTE_BLUE, PALETTE_GREEN
+        .byte PALETTE_GOTH, PALETTE_BEARD
         .word retsyn_fly, retsyn_bump, retsyn_die, retsyn_win
 
         .asciz "Rudolph"
@@ -29,7 +30,8 @@ archetype_table:
         .byte 1                 @ stamina
         .byte 10                @ mass
         .byte 0
-        .byte 17,21,25,29
+        .byte PALETTE_RED, PALETTE_GREEN
+        .byte PALETTE_RED, PALETTE_BLUE
         .word monk_fly, monk_bump, monk_die, monk_win
 
         .asciz "Ralph"
@@ -38,7 +40,8 @@ archetype_table:
         .byte 1                 @ stamina
         .byte 10                @ mass
         .byte 0
-        .byte 33,37,41,45
+        .byte PALETTE_BLUE, PALETTE_GREEN
+        .byte PALETTE_BLUE, PALETTE_GREEN
         .word alien_fly, alien_bump, alien_die, alien_win
 
         .asciz "Lopez"
@@ -47,7 +50,8 @@ archetype_table:
         .byte 1                 @ stamina
         .byte 10                @ mass
         .byte 0
-        .byte 49,53,57,61
+        .byte PALETTE_GREEN, PALETTE_CYAN
+        .byte PALETTE_BLUE, PALETTE_GREEN
         .word octo_fly, octo_bump, octo_die, octo_win
 
         .asciz "Pierce"
@@ -56,7 +60,8 @@ archetype_table:
         .byte 1                 @ stamina
         .byte 10                @ mass
         .byte 0
-        .byte 65,69,73,77
+        .byte PALETTE_BLUE, PALETTE_GREEN
+        .byte PALETTE_BLUE, PALETTE_GREEN
         .word dude_fly, dude_bump, dude_die, dude_win
 
         .asciz "Lana"
@@ -65,7 +70,8 @@ archetype_table:
         .byte 1                 @ stamina
         .byte 10                @ mass
         .byte 0
-        .byte 81,85,89,93
+        .byte PALETTE_PINK, PALETTE_BLUE
+        .byte PALETTE_GREEN, PALETTE_BLUE
         .word dudette_fly, dudette_bump, dudette_die, dudette_win
 
         .asciz "Myr"
@@ -74,7 +80,8 @@ archetype_table:
         .byte 1                 @ stamina
         .byte 10                @ mass
         .byte 0
-        .byte 97,101,105,109
+        .byte PALETTE_YELLOW, PALETTE_BLUE
+        .byte PALETTE_PINK, PALETTE_RED
         .word myr_fly, myr_bump, myr_die, myr_win
 
         .asciz "Randy"
@@ -83,7 +90,8 @@ archetype_table:
         .byte 1                 @ stamina
         .byte 10                @ mass
         .byte 0
-        .byte 113,117,121,125
+        .byte PALETTE_BEARD, PALETTE_GREEN
+        .byte PALETTE_YELLOW, PALETTE_PINK
         .word randy_fly, randy_bump, randy_die, randy_win
 
         .asciz "Mono"
@@ -92,7 +100,8 @@ archetype_table:
         .byte 1                 @ stamina
         .byte 10                @ mass
         .byte 0
-        .byte 129,133,129,133
+        .byte PALETTE_PURPLE, PALETTE_PINK
+        .byte PALETTE_PINK, PALETTE_RED
         .word monocle_fly, monocle_win, monocle_fly, monocle_win
 
         .ascii "Melville"
@@ -100,7 +109,8 @@ archetype_table:
         .byte 1                 @ stamina
         .byte 10                @ mass
         .byte 0
-        .byte 137,141,141,141
+        .byte PALETTE_RED, PALETTE_GOTH
+        .byte PALETTE_BEARD, PALETTE_PINK
         .word corpse_fly, corpse_bump, corpse_bump, corpse_bump
 archetype_table_len:    .hword .-archetype_table
 
@@ -186,3 +196,29 @@ sprite_palette:
         .hword 0x39ff, 0x0421, 0x2d6b, 0x56b5, 0x7fff, 0x1def, 0x36b6, 0x4f9c
         @@ Variable part (two groups of four, ascending luminance)
         .hword 0x1c00, 0x3c00, 0x5c00, 0x7c00, 0x00e0, 0x01e0, 0x02e0, 0x03e0
+
+        .global invariant_palette
+invariant_palette:
+        @@ Invariant part
+        .hword 0x39ff, 0x0421, 0x2d6b, 0x56b5, 0x7fff, 0x1def, 0x36b6, 0x4f9c
+        .global palette_table
+palette_table:
+        @@ Variable part (two groups of four, ascending luminance)
+        .equ PALETTE_BLUE, 0
+palette_blue:   .hword 0x1c00, 0x3c00, 0x5c00, 0x7c00
+        .equ PALETTE_GREEN, 1
+palette_green:  .hword 0x00e0, 0x01e0, 0x02e0, 0x03e0
+        .equ PALETTE_CYAN, 2
+palette_cyan:   .byte 0x60, 0x2d, 0x20, 0x46, 0xe0, 0x5e, 0xc0, 0x7b
+        .equ PALETTE_PINK, 3
+palette_pink:   .byte 0x10, 0x1c, 0xb5, 0x38, 0x7a, 0x55, 0x3f, 0x72
+        .equ PALETTE_YELLOW, 4
+palette_yellow: .byte 0x09, 0x01, 0xd0, 0x01, 0x98, 0x02, 0x5f, 0x03
+        .equ PALETTE_BEARD, 5
+palette_beard: .byte 0x08, 0x09, 0xac, 0x25, 0x31, 0x3e, 0xd6, 0x5a
+        .equ PALETTE_PURPLE, 6
+palette_purple: .byte 0x07, 0x1c, 0x0e, 0x34, 0x14, 0x50, 0x1b, 0x68
+        .equ PALETTE_RED, 7
+palette_red:    .byte 0x06, 0x00, 0x0d, 0x00, 0x13, 0x00, 0x1a, 0x00
+        .equ PALETTE_GOTH, 8
+palette_goth:   .byte 0x00, 0x00, 0x00, 0x00, 0xad, 0x35, 0xf7, 0x5e

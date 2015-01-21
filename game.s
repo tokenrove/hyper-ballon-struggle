@@ -106,6 +106,21 @@ play_game:
         ldr r0, [r5,#4]
         bl gfx_load_bg_palette
 
+        @@ copy in the sprites
+        @@ we copy in the balloon states and the frames of the two balloonists
+        @@ This stuff is about to change, when we start passing things
+        @@ around properly.
+        mov r0, #vram_base
+        add r0, r0, #0x10000
+        ldr r1, =sprite_data_begin
+        ldr r2, =sprite_data_end
+        sub r2, r2, r1
+        bl dma_copy32
+
+        @ Load sprite palette
+        ldr r0, =sprite_palette
+        bl gfx_set_spr_palette
+
 0:	@ Initialize this level
 
 	@ Initialize actor structures

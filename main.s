@@ -72,36 +72,21 @@ init:
         @@ as a default; every screen sets its own mode
         bl gfx_set_mode_1
 
-        @ Setup fonts
+        @@ Setup fonts
         bl font_load
 
-        @ Set a blue background
+        @@ Set a blue background of doom; if we see this, we died
+        @@ somewhere before hitting the title screen.
         mov r0, #palram_base
         mov r1, #0x005e
         strh r1, [r0]
         mov r1, #0x7e00
         strh r1, [r0], #2
 
-        @@ Load sprites into VRAM
-        @@ We just dump everything in, because we are lazy and don't
-        @@ have a lot of data.  If this grows, we'll need to instead
-        @@ dynamically copy sprite tiles into VRAM as we need them.
-        mov r0, #vram_base
-        add r0, r0, #0x10000
-        ldr r1, =sprite_data_begin
-        ldr r2, =sprite_data_end
-        sub r2, r2, r1
-        bl memcpy_h
-
-        @ Load sprite palette
-        ldr r0, =sprite_palette
-        bl gfx_set_spr_palette
-
+        @@ Setup interrupts and start playing music
+        bl music_init
         bl intr_init
 
-        bl music_init
-
-        @ load music
         mov r0, #0		    @ music idx
         ldr r4, =music_table
         add r4, r4, r0, lsl #2

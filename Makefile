@@ -28,6 +28,7 @@ archetype.o: data/retsyn_fly.raw data/retsyn_bump.raw data/retsyn_die.raw data/r
 title.o: data/title.map
 victory.o: data/victory.map
 gameover.o: data/gameover.map
+select.o: data/selector.raw
 
 arenas.o: data/arena_default_mg.map data/arena_default_bg.map
 
