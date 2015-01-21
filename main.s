@@ -36,6 +36,7 @@ metagame:
         bl challenge
         @@ call play_game(us, color, them, color, arena)
         stmfd sp!, {r0,r1}
+        mov r4, #0
         bl play_game
         @@ we get back an outcome r0 -- lose or win
         mov r5, r0

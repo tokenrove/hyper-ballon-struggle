@@ -65,6 +65,8 @@
 @ NOTE: Actor 0 is always the player.
 .lcomm actors, actor_len*max_actors
 
+.lcomm arena, 4
+
 
 	.section .text
 	.arm
@@ -72,10 +74,16 @@
 
 	.include "gba.inc"
 
-@@@ play_game(us, our color, them, their color, arena)
+@@@ play_game(r0 = us, r1 = our color, r2 = them, r3 = their color, r4 = arena)
         .global play_game
 play_game:
-        stmfd sp!, {r1-r12,lr}
+        stmfd sp!, {r5-r12,lr}
+
+        @@ set things up based on arguments passed in
+        ldr r5, =arena_table
+        ldr r5, [r5, r4, lsl #2]
+        ldr r4, =arena
+        str r5, [r4]
 
         @@ setup the background
         mov r0, #REG_DISPCNT
@@ -88,14 +96,14 @@ play_game:
         bl zero_h
 
         mov r0, #1
-        ldr r1, =arena_midground
+        ldr r1, [r5,#8]
         bl copy_tilemap_to_vram_bg
 
         mov r0, #2
-        ldr r1, =arena_background
+        ldr r1, [r5,#12]
         bl copy_tilemap_to_vram_bg
 
-        ldr r0, =arena_pal
+        ldr r0, [r5,#4]
         bl gfx_load_bg_palette
 
 0:	@ Initialize this level
@@ -268,7 +276,7 @@ coreloop:
 @@@ We get here from the loop through the actors, where r2 is the pointer to the actor, and r8 is the number of actors left in the table.
 match_finished:
         mov r0, #OUTCOME_LOSE
-        ldmfd sp!, {r1-r12,pc}
+        ldmfd sp!, {r5-r12,pc}
 @ EOR coreloop
 
 
@@ -413,7 +421,9 @@ update_physics:
         ldrsh r2, [r0, #6]	@ y position
         mov r2, r2, lsr #3
         mov r1, r1, lsr #3
-        ldr r3, =arena_midground
+        ldr r3, =arena
+        ldr r3, [r3]
+        ldr r3, [r3, #8]
         ldrb r4, [r3], #2       @ width of map
         mla r4, r2, r4, r1
         lsl r4, r4, #1
@@ -562,21 +572,5 @@ do_damage:
 1:	strb r2, [r0, #3]
 	ldmfd sp!, {pc}
 @ EOR do_damage
-
-        .section .rodata
-        .align 2
-arena_midground:
-        .byte 30, 20
-        .incbin "data/arena_default_mg.map"
-        .hword (1f - 0f)/32
-0: .incbin "data/arena_default_mg.tiles"
-1:
-arena_background:
-        .byte 30, 20
-        .incbin "data/arena_default_bg.map"
-        .hword (1f - 0f)/32
-0: .incbin "data/arena_default_bg.tiles"
-1:
-arena_pal:      .incbin "data/arena_default_mg.pal"
 
 @ EOF game.s

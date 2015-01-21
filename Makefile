@@ -12,7 +12,7 @@ default: mortimer roz main.bin
 
 SRCOBJS=start.o main.o dma.o gfx.o util.o game.o font.o \
   title.o select.o challenge.o victory.o gameover.o credits.o
-DATAOBJS=archetype.o fontdat.o
+DATAOBJS=archetype.o fontdat.o arenas.o
 
 %.raw: %.pcx roz
 	./roz $<
@@ -26,7 +26,7 @@ title.o: data/title.map
 victory.o: data/victory.map
 gameover.o: data/gameover.map
 
-game.o: data/arena_default_mg.map data/arena_default_bg.map
+arenas.o: data/arena_default_mg.map data/arena_default_bg.map
 
 main: $(SRCOBJS) $(DATAOBJS)
 	$(LD) -T linkscript $^ -o $@
