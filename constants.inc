@@ -1,3 +1,4 @@
+@@@ -*- mode: asm; -*-
 @@@ game constants
 
 .equ OUTCOME_LOSE, 0

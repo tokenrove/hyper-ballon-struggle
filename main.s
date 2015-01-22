@@ -9,6 +9,7 @@
 
 	.include "gba.inc"
         .include "constants.inc"
+        .include "archetype.inc"
 
 @ main
 @   program entry point.  never returns.
@@ -29,26 +30,35 @@ forever:
         @@ we get back r0 (selected character archetype) and r1 (palette)
 
         @@ while there are more opponents to challenge, challenge them
+        ldr r5, =levels
 metagame:
+        @@ r0 = archetype
+        @@ r1 = palette
+        @@ r2 = next opponent
+        @@ r3 = opponent palette
+        @@ r4 = arena
+        @@ r5 = level ptr
         @@ select next opponent
+        ldrh r3, [r5], #2
+        ldrb r2, [r5], #1
         @@ select an arena
+        ldrb r4, [r5], #1
         @@ call challenge
         bl challenge
         @@ call play_game(us, color, them, color, arena)
         stmfd sp!, {r0,r1}
-        mov r4, #0
         bl play_game
         @@ we get back an outcome r0 -- lose or win
-        mov r5, r0
+        mov r6, r0
         ldmfd sp!, {r0,r1}
-        cmp r5, #OUTCOME_LOSE
+        cmp r6, #OUTCOME_LOSE
         beq game_over
 
         bl victory
 
         @@ are there more opponents?
-        ldr r1, =levels_end     @ &levels_len is also the end of levels
-        cmp r0, r1
+        ldr r6, =levels_end     @ &levels_len is also the end of levels
+        cmp r5, r6
         blt metagame
 
         @@ if you got here, you won!  congratulations!
@@ -104,16 +114,16 @@ init:
 
         .section .rodata
 
-.equ CHAR_RETSYN, 0
-.equ ARENA_DEFAULT, 0
+        .equ ARENA_DEFAULT, 0
 
         @@ levels format:
-        @@ one byte each: character, palette, alt. palette, arena
+        @@ one byte each: palette, alt. palette, character, arena
+        @@ Palette first so we can load both together as a 16-bit load
         .align
 levels:
-        .byte CHAR_RETSYN
-        .byte 0
-        .byte 1
+        .byte PALETTE_GREEN
+        .byte PALETTE_YELLOW
+        .byte CHAR_RUDOLPH
         .byte ARENA_DEFAULT
 levels_end:
 

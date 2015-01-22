@@ -184,6 +184,13 @@ select_character:
         bl music_play_sfx
         ldmfd sp!, {r0-r2,lr}
 
+        sub r0, r6, #1
+        ldr r1, =archetype_table
+        add r1, r1, r0, lsl #5
+        add r1, r1, r7, lsl #1
+        ldrb r2, [r1, #13]
+        ldrb r1, [r1, #12]
+        orr r1, r1, r2, lsl #8
         ldmfd sp!, {pc}
 
         @@ helper routine to find palette r7 for character r6 and pop
@@ -226,7 +233,7 @@ copy_in_sprites:
         @@ palette for selector
         mov r7, #palram_base
         add r7, r7, #0x200
-        ldr r0, =sprite_palette
+        ldr r0, =invariant_palette
         ldmia r0, {r0-r5,r8-r9}
         stmia r7!, {r0-r5,r8-r9}
 

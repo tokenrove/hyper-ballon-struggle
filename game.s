@@ -29,9 +29,14 @@
 .equ min_x_accel, -16
 @ collision radii
 .equ dude_collide_radius, 220
-@ ingame outcomes
-.equ outcome_complete, 0
-.equ outcome_death, 1
+
+        .equ BALLOON_TILE, 0
+        .equ BALLOON_POP_TILE, 1
+        .equ ACTOR_TILE_OFFSET, 16
+        .equ FRAME_FLY, 0
+        .equ FRAME_BUMP, 4
+        .equ FRAME_DIE, 8
+        .equ FRAME_WIN, 16
 
         .section .iwram
         .align 2
@@ -85,6 +90,7 @@ play_game:
         ldr r4, =arena
         str r5, [r4]
 
+        stmfd sp!, {r0-r3}
         @@ setup the background
         mov r0, #REG_DISPCNT
         mov r1, #0x40
@@ -106,72 +112,37 @@ play_game:
         ldr r0, [r5,#4]
         bl gfx_load_bg_palette
 
-        @@ copy in the sprites
-        @@ we copy in the balloon states and the frames of the two balloonists
-        @@ This stuff is about to change, when we start passing things
-        @@ around properly.
-        mov r0, #vram_base
-        add r0, r0, #0x10000
-        ldr r1, =sprite_data_begin
-        ldr r2, =sprite_data_end
+        @@ copy in sprite tiles
+        @@ we start with the two balloon frames
+        mov r5, #vram_base
+        add r5, r5, #0x10000
+        ldr r1, =balloon_sprites
+        ldr r2, =balloon_sprites_end
         sub r2, r2, r1
+        mov r0, r5
         bl dma_copy32
 
-        @ Load sprite palette
-        ldr r0, =sprite_palette
-        bl gfx_set_spr_palette
+        @@ Drop in the invariant palette at 0 for any overlays or
+        @@ anything we might use.
+        mov r0, #palram_base
+        add r0, r0, #0x200
+        ldr r1, =invariant_palette
+        mov r2, #32
+        bl dma_copy32
 
-0:	@ Initialize this level
+        @@ Initialize actor structures
+        ldr r0, =n_actors
+        mov r1, #2
+        strb r1, [r0]
 
-	@ Initialize actor structures
-	ldr r0, =n_actors
-	mov r1, #2
-	strb r1, [r0]
-
-	ldr r0, =actors
-	mov r1, #0x00	    @ palette
-	strb r1, [r0], #1
-	mov r1, #0x00	    @ type
-	strb r1, [r0], #1
-	mov r1, #0x00	    @ mode
-	strb r1, [r0], #1
-	mov r1, #0x04	    @ n_balloons
-	strb r1, [r0], #1
-	mov r1, #42	    @ x
-	strh r1, [r0], #2
-	mov r1, #52	    @ y
-	strh r1, [r0], #2
-	mov r1, #0	    @ x velocity
-	strh r1, [r0], #2
-	strh r1, [r0], #2   @ ... and y velocity
-	strh r1, [r0], #2   @ ... and x acceleration
-	strh r1, [r0], #2   @ ... and y acceleration
-	mov r1, #0	    @ current animation and frame
-	strh r1, [r0], #2
-	@ we don't touch the arbitrary state information
-	add r0, r0, #14
-
-	mov r1, #0x00	    @ palette
-	strb r1, [r0], #1
-	mov r1, #0x01	    @ type
-	strb r1, [r0], #1
-	mov r1, #0x01	    @ mode
-	strb r1, [r0], #1
-        mov r1, #0x04	    @ n_balloons
-	strb r1, [r0], #1
-	mov r1, #62	    @ x
-	strh r1, [r0], #2
-	mov r1, #32	    @ y
-	strh r1, [r0], #2
-	mov r1, #0	    @ x velocity
-	strh r1, [r0], #2
-	strh r1, [r0], #2   @ ... and y velocity
-	strh r1, [r0], #2   @ ... and x acceleration
-	strh r1, [r0], #2   @ ... and y acceleration
-	mov r1, #0	    @ current animation and frame
-	strh r1, [r0], #2
-	@ we don't touch the arbitrary state information
-	add r0, r0, #14
+        @@ XXX TODO load spawn points from arena
+        ldr r8, =actors
+        ldmfd sp!, {r6,r7}
+        mov r9, #1
+        bl setup_balloonist
+        ldmfd sp!, {r6,r7}
+        mov r9, #2
+        bl setup_balloonist
 
         @@ Run the core game loop
 coreloop:
@@ -202,24 +173,31 @@ coreloop:
 
 	@ for each actor
 	@   render actor to oam based on type and state
-	
+
 1:	ldrsh r1, [r2, #6]  @ y coordinate
-	@ FIXME: clip by y here
+        @@ FIXME: clip by y here
+        and r1, r1, #0xff
 	strh r1, [r0], #2
 
 	ldrb r3, [r2, #2]   @ mode
 	ldrsh r1, [r2, #4]  @ x coordinate
-	@ FIXME: clip by x here
+        @@ FIXME: clip by x here
+        mov r4, #0x200
+        sub r4, r4, #1
+        and r1, r1, r4
 	orr r1, r1, #0x4000 @ size = 16x16
 	and r3, r3, #1	    @ take the facing bit
 	orr r1, r1, r3, lsl #12
 	strh r1, [r0], #2
 
 	@ check type and such here
-	ldrb r1, [r2]	    @ palette
-	mov r1, r1, lsl #12
-	orr r1, r1, #1	    @ tile idx
-	orr r1, r1, #0x0800 @ priority 2 (behind balloons)
+        ldrb r1, [r2, #17]      @ current frame
+        lsl r1, r1, #2
+        ldrb r9, [r2]	    @ palette
+        @@ XXX hack: use palette number to figure which actor we're indexing.
+        add r1, r1, r9, lsl #4
+        orr r1, r9, lsl #12
+        orr r1, r1, #0x0800 @ priority 2 (behind balloons)
 	strh r1, [r0], #2
 
 	@ rotation bits
@@ -258,7 +236,8 @@ coreloop:
 	strh r1, [r0], #2
 	@ FIXME add palette switching and such here
 	@ also make priority random
-	mov r1, #0	    @ tile idx
+        mov r1, #0	    @ tile idx
+        orr r1, r1, r9, lsl #12 @ player's palette
 	strh r1, [r0], #2
 	mov r1, #0	    @ rotation bits
 	strh r1, [r0], #2
@@ -294,6 +273,87 @@ match_finished:
         ldmfd sp!, {r5-r12,pc}
 @ EOR coreloop
 
+
+        @@ copy in frames, setup actor structure
+        @@ r5 = vram offset (the value passed in isn't use; we use r9
+        @@                   instead and copy to a fixed location)
+        @@ r6 = archetype index
+        @@ r7 = palettes
+        @@ r8 = actors ptr
+        @@ r9 = palette index / which player
+setup_balloonist:
+        stmfd sp!, {lr}
+        ldr r4, =archetype_table
+        add r4, r4, r6, lsl #5
+
+        mov r5, #vram_base
+        add r5, #0x10000
+        add r5, r5, r9, lsl #9  @ 32 bytes per tile, 16 tiles per group
+
+        ldr r1, [r4, #16]!      @ fly
+        mov r2, #16*16/2
+        mov r0, r5
+        add r5, r5, r2
+        bl dma_copy32
+
+        ldr r1, [r4, #4]!       @ bump
+        mov r2, #16*16/2
+        mov r0, r5
+        add r5, r5, r2
+        bl dma_copy32
+
+        ldr r1, [r4, #4]!       @ die
+        mov r2, #16*16/2
+        mov r0, r5
+        add r5, r5, r2
+        bl dma_copy32
+
+        ldr r1, [r4, #4]!       @ win
+        mov r2, #16*16/2
+        mov r0, r5
+        add r5, r5, r2
+        bl dma_copy32
+
+        mov r0, #palram_base
+        add r0, #0x200
+        add r0, r0, r9, lsl #5
+        ldr r2, =invariant_palette
+        ldmia r2, {r1-r4}
+        stmia r0!, {r1-r4}
+
+        and r1, r7, #0xff
+        lsr r3, r7, #8
+        ldr r2, =palette_table
+        add r3, r2, r3, lsl #3
+        add r2, r2, r1, lsl #3
+        ldmia r2, {r1,r2}
+        stmia r0!, {r1,r2}
+        ldmia r3, {r1,r2}
+        stmia r0!, {r1,r2}
+
+        strb r9, [r8], #1       @ palette
+        strb r6, [r8], #1       @ archetype
+        mov r1, #0x00	    @ mode
+        strb r1, [r8], #1
+        mov r1, #0x04	    @ n_balloons
+        strb r1, [r8], #1
+        mov r1, #42	    @ x
+        cmp r9, #2
+        addeq r1, r1, #100
+        strh r1, [r8], #2
+        mov r1, #52	    @ y
+        strh r1, [r8], #2
+        mov r1, #0	    @ x velocity
+        strh r1, [r8], #2
+        strh r1, [r8], #2   @ ... and y velocity
+        strh r1, [r8], #2   @ ... and x acceleration
+        strh r1, [r8], #2   @ ... and y acceleration
+        mov r1, #0	    @ current animation and frame
+        strh r1, [r8], #2
+        @ we don't touch the arbitrary state information
+        add r8, r8, #14
+
+        ldmfd sp!, {pc}
 
 @ human_input
 @ FIXME replace raw compares with table lookups of player speeds

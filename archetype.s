@@ -1,4 +1,5 @@
 
+        .include "archetype.inc"
 	.section .rodata
 	.align
 
@@ -117,9 +118,10 @@ archetype_table_len:    .hword .-archetype_table
 @@@ Tile data
 
         .align 2
-        .global sprite_data_begin
-sprite_data_begin:
-balloon_sprite: .incbin "data/ball2.raw"
+        .global balloon_sprites, balloon_sprites_end
+balloon_sprites: .incbin "data/ball2.raw"
+        .incbin "data/ball2e.raw"
+balloon_sprites_end:
 
         .local retsyn_fly, retsyn_bump, retsyn_die, retsyn_win
         .align 2
@@ -187,16 +189,6 @@ monocle_win:     .incbin "data/monocle_win.raw"
 corpse_fly:     .incbin "data/corpse_fly.raw"
 corpse_bump:    .incbin "data/corpse_bump.raw"
 
-        .global sprite_data_end
-sprite_data_end:
-
-        .global sprite_palette
-sprite_palette:
-        @@ Invariant part
-        .hword 0x39ff, 0x0421, 0x2d6b, 0x56b5, 0x7fff, 0x1def, 0x36b6, 0x4f9c
-        @@ Variable part (two groups of four, ascending luminance)
-        .hword 0x1c00, 0x3c00, 0x5c00, 0x7c00, 0x00e0, 0x01e0, 0x02e0, 0x03e0
-
         .global invariant_palette
 invariant_palette:
         @@ Invariant part
@@ -204,21 +196,12 @@ invariant_palette:
         .global palette_table
 palette_table:
         @@ Variable part (two groups of four, ascending luminance)
-        .equ PALETTE_BLUE, 0
 palette_blue:   .hword 0x1c00, 0x3c00, 0x5c00, 0x7c00
-        .equ PALETTE_GREEN, 1
 palette_green:  .hword 0x00e0, 0x01e0, 0x02e0, 0x03e0
-        .equ PALETTE_CYAN, 2
 palette_cyan:   .byte 0x60, 0x2d, 0x20, 0x46, 0xe0, 0x5e, 0xc0, 0x7b
-        .equ PALETTE_PINK, 3
 palette_pink:   .byte 0x10, 0x1c, 0xb5, 0x38, 0x7a, 0x55, 0x3f, 0x72
-        .equ PALETTE_YELLOW, 4
 palette_yellow: .byte 0x09, 0x01, 0xd0, 0x01, 0x98, 0x02, 0x5f, 0x03
-        .equ PALETTE_BEARD, 5
 palette_beard: .byte 0x08, 0x09, 0xac, 0x25, 0x31, 0x3e, 0xd6, 0x5a
-        .equ PALETTE_PURPLE, 6
 palette_purple: .byte 0x07, 0x1c, 0x0e, 0x34, 0x14, 0x50, 0x1b, 0x68
-        .equ PALETTE_RED, 7
 palette_red:    .byte 0x06, 0x00, 0x0d, 0x00, 0x13, 0x00, 0x1a, 0x00
-        .equ PALETTE_GOTH, 8
 palette_goth:   .byte 0x00, 0x00, 0x00, 0x00, 0xad, 0x35, 0xf7, 0x5e
