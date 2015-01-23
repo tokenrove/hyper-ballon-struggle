@@ -175,12 +175,14 @@ coreloop:
 	@   render actor to oam based on type and state
 
 1:	ldrsh r1, [r2, #6]  @ y coordinate
+        sub r1, r1, #8
         @@ FIXME: clip by y here
         and r1, r1, #0xff
 	strh r1, [r0], #2
 
 	ldrb r3, [r2, #2]   @ mode
-	ldrsh r1, [r2, #4]  @ x coordinate
+        ldrsh r1, [r2, #4]  @ x coordinate
+        sub r1, r1, #8
         @@ FIXME: clip by x here
         mov r4, #0x200
         sub r4, r4, #1
@@ -210,9 +212,10 @@ coreloop:
         cmp r4, #0
         beq match_finished
 	ldrsh r5, [r2, #4]  @ player's x
+        sub r5, r5, #7
 	@add r5, r5, #8
 	ldrsh r6, [r2, #6]  @ player's y
-	sub r6, r6, #8
+        sub r6, r6, #16
 
 2:	@ FIXME improve drift algorithm
 	ldr r7, =drift
@@ -229,6 +232,7 @@ coreloop:
         @@ render balloon to oam
         mov r1, r6	    @ y
         and r1, r1, #255
+        orr r1, r1, #0x400
         strh r1, [r0], #2
         mov r1, #512
         sub r1, r1, #1
@@ -242,8 +246,9 @@ coreloop:
 	mov r1, #0	    @ rotation bits
 	strh r1, [r0], #2
 	@     update driftx, drifty
-	add r5, r5, #2
-	@ FIXME should cluster around player center
+        add r5, r5, #2
+
+        @ FIXME should cluster around player center
 	@ with wider spread for larger n
 	subs r4, r4, #1
 	bne 2b
@@ -264,7 +269,14 @@ coreloop:
 	cmp r0, r8
 	blt 1b
 
-	@ loop forever
+        ldr r1, =REG_BLDCNT
+        mov r3, #0x0f40
+        strh r3, [r1], #2
+        mov r3, #0x0400
+        orr r3, r3, #0x1c
+        strh r3, [r1]
+
+        @ loop forever
 	b 0b
 
 @@@ We get here from the loop through the actors, where r2 is the pointer to the actor, and r8 is the number of actors left in the table.
@@ -630,7 +642,7 @@ do_damage:
         stmfd sp!, {r0-r3,lr}
 	ldrb r2, [r0, #3]	@ n_balloons
 	subs r2, r2, #1
-	bne 1f
+        bgt 1f
 
 	@ deal with popping
         mov r2, #0
