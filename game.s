@@ -21,10 +21,11 @@
         .equ BALLOON_TILE, 0
         .equ BALLOON_POP_TILE, 1
         .equ ACTOR_TILE_OFFSET, 16
+
         .equ FRAME_FLY, 0
-        .equ FRAME_BUMP, 4
-        .equ FRAME_DIE, 8
-        .equ FRAME_WIN, 16
+        .equ FRAME_BUMP, 1
+        .equ FRAME_DIE, 2
+        .equ FRAME_WIN, 3
 
         .equ BODY_LEN, 16
         .equ BALLOONIST_LEN, BODY_LEN+16
@@ -118,15 +119,17 @@ play_game:
         bl apply_gravity
         bl enemy_action
 
+        @@ CHECK COLLISIONS
         ldr r4, =balloonists
         add r6, r4, #BALLOONIST_LEN
-        bl check_balloonist_collisions
-        eor r4, r4, r6
-        eor r6, r4, r6
-        eor r4, r4, r6
-        bl check_balloonist_collisions
+        bl check_balloonist_balloonist_collision
+        @@ bl check_balloon_collisions
+        @@ eor r4, r4, r6
+        @@ eor r6, r4, r6
+        @@ eor r4, r4, r6
+        @@ bl check_balloon_collisions
 
-        @@ UPDATE PHYSICS
+        @@ UPDATE MOTION
         ldr r4, =balloonists
         bl update_balloonist_motion
         add r4, r4, #BALLOONIST_LEN
@@ -421,10 +424,10 @@ render_balloonist:
         orr r1, r1, r2, lsl #12
         strh r1, [r0], #2
 
-        bic r2, r2, #1
-        lsl r2, r2, #1
-        @@ XXX hack: use palette number to figure which actor we're indexing.
-        add r2, r2, r9, lsl #4
+        bic r3, r3, #1
+        lsl r3, r3, #1
+        ldrh r2, [r4, #ACTOR_T_TILE_OFFSET]
+        add r2, r2, r3
         orr r2, r9, lsl #12
         orr r2, r2, #0x0800 @ priority 2 (behind balloons)
         strh r2, [r0], #2
@@ -838,54 +841,105 @@ update_body_motion:
         ldmfd sp!, {r6-r10,pc}
 
 
-        @@ r4 = balloonist
-        @@ r6 = other balloonist
-check_balloonist_collisions:
+        @@ r4 = body
+        @@ r6 = other body
+        @@ LT if collision occurred, GE otherwise
+check_body_collision:
         stmfd sp!, {lr}
-        ldrsh r0, [r4, #BODY_T_X]
-        ldrsh r1, [r4, #BODY_T_Y]
 
-        @ FIXME: If the velocity delta > 0, no collision
-	@     Switch collidep(a, b)
+        @@ If the velocity signs are the same, skip the check
+        ldrsh r0, [r4, #BODY_T_VX]
+        ldrsh r2, [r6, #BODY_T_VX]
+        ldrsh r1, [r4, #BODY_T_VY]
+        ldrsh r3, [r6, #BODY_T_VY]
+        muls r0, r2, r0
+        mulgts r1, r3, r1
+        bgt 9f
+
+        ldrsh r0, [r4, #BODY_T_X]
+        asr r0, #PHYS_FIXED_POINT
+        ldrsh r1, [r4, #BODY_T_Y]
+        asr r1, #PHYS_FIXED_POINT
         ldrsh r2, [r6, #BODY_T_X]
         ldrsh r3, [r6, #BODY_T_Y]
-        @ dy = ay - by
-        sub r9, r1, r3
-        @ dy^2
-	mul r8, r9, r9
-        @ dx = ax - bx
-        sub r9, r0, r2
-        @ p = dx^2 + dy^2
-	mla r10, r9, r9, r8
-	@ FIXME: replace with table lookup on type property
-        mov r8, #COLLIDE_TYPE_1_RADIUS
-        mov r9, #COLLIDE_TYPE_1_RADIUS
-	add r8, r8, r9
-	cmp r10, r8
-        bgt .Lno_collision
+        sub r3, r1, r3, asr #PHYS_FIXED_POINT @ dy = ay - by
+        mul r1, r3, r3                        @ dy^2
+        sub r2, r0, r2, asr #PHYS_FIXED_POINT @ dx = ax - bx
+        mla r0, r2, r2, r1                    @ p = dx^2 + dy^2
+
+        ldrb r2, [r4, #BODY_T_COLLIDE_TYPE]
+        ldrb r3, [r6, #BODY_T_COLLIDE_TYPE]
+        @@ Minowski sum
+        cmp r2, #0
+        moveq r2, #COLLIDE_TYPE_0_RADIUS
+        movne r2, #COLLIDE_TYPE_1_RADIUS
+        cmp r3, #0
+        moveq r3, #COLLIDE_TYPE_0_RADIUS
+        movne r3, #COLLIDE_TYPE_1_RADIUS
+        add r2, r2, r3
+        cmp r0, r2
+        @@ the important thing here is the cpsr_flag value
+9:      ldmfd sp!, {pc}
+
+
+        @@ r4 = balloonist
+        @@ r6 = other balloonist
+check_balloonist_balloonist_collision:
+        stmfd sp!, {lr}
+
+        bl check_body_collision
+        bge .Lno_collision
 
         @@ collision response
-        ldrsh r8, [r4, #BODY_T_VX]
-        ldrsh r9, [r6, #BODY_T_VX]
-        strh r9, [r4, #BODY_T_VX]
-        strh r8, [r6, #BODY_T_VX]
-        add r0, r0, r9, asr #PHYS_FIXED_POINT
-        add r1, r1, r8, asr #PHYS_FIXED_POINT
-        strh r0, [r4, #BODY_T_X]
-        strh r1, [r6, #BODY_T_X]
-
-        ldrsh r8, [r4, #BODY_T_VY]
-        ldrsh r9, [r6, #BODY_T_VY]
-        strh r9, [r4, #BODY_T_VY]
-        strh r8, [r6, #BODY_T_VY]
-        add r1, r1, r9, asr #PHYS_FIXED_POINT
-        add r3, r3, r8, asr #PHYS_FIXED_POINT
-        strh r1, [r4, #BODY_T_Y]
-        strh r3, [r6, #BODY_T_Y]
+        ldrb r0, [r4, #ACTOR_T_FRAME]
+        and r0, r0, #1
+        orr r0, r0, #FRAME_BUMP<<1
+        strb r0, [r4, #ACTOR_T_FRAME]
+        ldrb r0, [r6, #ACTOR_T_FRAME]
+        and r0, r0, #1
+        orr r0, r0, #FRAME_BUMP<<1
+        strb r0, [r6, #ACTOR_T_FRAME]
+        ldmfd sp!, {pc}
 
 .Lno_collision:
+        ldrb r0, [r4, #ACTOR_T_FRAME]
+        and r0, r0, #1
+        strb r0, [r4, #ACTOR_T_FRAME]
+        ldrb r0, [r6, #ACTOR_T_FRAME]
+        and r0, r0, #1
+        strb r0, [r6, #ACTOR_T_FRAME]
         ldmfd sp!, {pc}
-@ EOR check_collisions
+
+
+        @@ r4 = balloonist
+        @@ r6 = other balloonist
+check_balloon_collisions:
+        stmfd sp!, {lr}
+        ldrb r9, [r4, #ACTOR_T_IDENTITY]
+        ldrb r5, [r4, #ACTOR_T_BALLOONS]   @ number of balloons
+        ldr r3, =balloons
+        sub r2, r9, #1
+        add r3, r3, r2, lsl #7 @ log2(BODY_LEN*MAX_BALLOONS)
+0:
+        cmp r5, #0
+        beq .Lno_more_balloons
+        tst r5, #1
+        lsreq r5, r5, #1
+        addeq r3, r3, #BODY_LEN
+        beq 0b
+
+        @@ check balloons against each-other
+        @@ check balloons against opponent
+        stmfd sp!, {r4,r6}
+        mov r4, r3
+        ldmfd sp!, {r4,r6}
+
+        add r3, r3, #BODY_LEN
+        lsrs r5, r5, #1
+        bne 0b
+
+.Lno_more_balloons:
+        ldmfd sp!, {pc}
 
 
         @@ r4 = defender
