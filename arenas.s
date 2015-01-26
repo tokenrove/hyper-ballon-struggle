@@ -29,7 +29,7 @@ default:
         .byte 4
         .hword 0
         .byte 42,100
-        .byte 90,10
+        .byte 90,4
         .word default_palette
         .word default_midground
         .word default_background

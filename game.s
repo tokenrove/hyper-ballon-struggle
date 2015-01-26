@@ -33,6 +33,7 @@
 
         .equ BALLOON_MASS, 1
         .equ BALLOON_LIFT, -20
+        .equ BALLOON_DISTANCE, 30
 
         .equ BODY_T_X, 0
         .equ BODY_T_Y, 2
@@ -476,7 +477,7 @@ human_input:
         ldrsh r3, [r4, #BODY_T_IMPULSE_Y]
         ldr r0, [r4, #ACTOR_T_ARCHETYPE_PTR]
         ldrb r0, [r0, #ARCHETYPE_T_STRENGTH]
-        sub r3, r3, r0, lsl #2
+        sub r3, r3, r0, lsl #1
         @@ XXX this is where the flap abstraction needs to happen
         strh r3, [r4, #BODY_T_IMPULSE_Y]
 
@@ -486,8 +487,7 @@ human_input:
         bic r3, r3, #1          @ face right
         strb r3, [r4, #ACTOR_T_FRAME]
         ldrsh r3, [r4, #BODY_T_IMPULSE_X]
-        @@ add r3, r3, #8
-        mov r3, #8
+        add r3, r3, #16
         strh r3, [r4, #BODY_T_IMPULSE_X]
         b 9f
 
@@ -497,8 +497,7 @@ human_input:
         orr r3, r3, #1          @ face left
         strb r3, [r4, #ACTOR_T_FRAME]
         ldrsh r3, [r4, #BODY_T_IMPULSE_X]
-        @@ sub r3, r3, #8
-        mov r3, #-8
+        sub r3, r3, #16
         strh r3, [r4, #BODY_T_IMPULSE_X]
 
 .Lnot_flapping:
@@ -562,15 +561,8 @@ update_balloonist_motion:
         sub r1, r1, r8, asr #PHYS_FIXED_POINT
         mul r2, r0, r0
         mla r2, r1, r1, r2
-        cmp r9, #1
-        bne 8f
-        stmfd sp!, {r0-r5}
-        mov r0, r2
-        bl print_debug_word
-        ldmfd sp!, {r0-r5}
-8:
 
-        cmp r2, #30<<PHYS_FIXED_POINT
+        cmp r2, #BALLOON_DISTANCE<<PHYS_FIXED_POINT
         blt 1f
         @@ bring balloons closer
         strh r7, [r4, #BODY_T_X]
@@ -639,112 +631,141 @@ update_body_motion:
         stmfd sp!, {r0,r4,r6}
         @@ free: r0,r4,r6,r9,r10
 
-@@         ldr r8, [r5, #ARENA_T_MIDGROUND_PTR]
-@@         ldrb r6, [r8], #1
-@@         ldrb r7, [r8], #1
+        @@ we check the minkowski sum of an 8x8 tile and either an 8x8 or 16x16 sprite
 
-@@         @@ we check the minkowski sum of an 8x8 tile and either an 8x8 or 16x16 sprite
+        @@ collide with playfield
+        @@ we check the n tiles that compose the balloonist and set
+        @@ a flag for each, then decide how to respond based on those
+        @@ flags and current velocity
+        @@ XXX subtract 8+r3<<2 from positions here for leftmost corner
+        stmfd sp!, {r1,r2,r8}
+        ldr r6, [r5, #ARENA_T_MIDGROUND_PTR]
+        ldrb r9, [r6], #1
+        ldrb r10, [r6], #1
+        @@ scale to pixels
+        asr r2, #PHYS_FIXED_POINT
+        asr r8, #PHYS_FIXED_POINT
+        sub r2, r2, #4
+        sub r8, r8, #4
+        subs r2, r2, r3, lsl #2
+        movmi r2, #0
+        subs r8, r8, r3, lsl #2
+        movmi r8, #0
+        @@ scale to tiles
+        lsr r2, #3
+        lsr r8, #3
 
-@@         @@ collide with playfield
-@@         @@ we check the four tiles that compose the balloonist and set
-@@         @@ a flag for each, then decide how to respond based on those
-@@         @@ flags and current velocity
-@@         ldrsh r1, [r4, #BODY_T_X]
-@@         ldrsh r2, [r4, #BODY_T_Y]
-@@         @@ subs r1, r1, #4<<PHYS_FIXED_POINT
-@@         @@ subs r2, r2, #4<<PHYS_FIXED_POINT
-@@         asrs r2, #3+PHYS_FIXED_POINT
-@@         movmi r2, #0
-@@         asrs r1, #3+PHYS_FIXED_POINT
-@@         movmi r1, #0
-@@         sub r2, r2, #1
-@@         sub r1, r1, #1
-@@         mla r0, r2, r6, r1
-@@         lsl r0, r0, #1
-@@         add r1, r0, r6, lsl #1
-@@         add r1, r1, r6, lsl #1
-@@         ldrh r2, [r8, r0]
-@@         add r0, r0, #4
-@@         ldrh r3, [r8, r0]
-@@         ldrh r0, [r8, r1]
-@@         add r1, r1, #4
-@@         ldrh r1, [r8, r1]
+        mla r0, r8, r9, r2
+        lsl r0, r0, #1
 
-@@         @@ r6 = rlRL -- i.e., Upper Left collision is bit 0
-@@         mov r6, #0
-@@         cmp r2, #0
-@@         movne r6, #0b1
-@@         cmp r3, #0
-@@         orrne r6, r6, #0b10
-@@         cmp r0, #0
-@@         orrne r6, r6, #0b100
-@@         cmp r1, #0
-@@         orrne r6, r6, #0b1000
+        @@ walk the tiles in a boustrophedonic fashion
+        @@ or'ing together the cases til you've reduced it to UDLR
+        .equ PFCD_TOP, 1
+        .equ PFCD_BOTTOM, 0b10
+        .equ PFCD_LEFT, 0b100
+        .equ PFCD_RIGHT, 0b1000
 
-@@         ldrsh r0, [r4, #BODY_T_VY]
-@@         cmp r0, #0
-@@         beq .Lcheck_h
-@@         bmi .Lnegative_y
-@@         tst r6, #0b1100
-@@         beq .Lcheck_h
-@@         @@ we're on a floor
-@@         mov r0, #0
-@@         strh r0, [r4, #BODY_T_VY]
-@@         ldrsh r0, [r4, #BODY_T_Y]
-@@         sub r0, r0, #1<<PHYS_FIXED_POINT
-@@         bic r0, r0, #0xf
-@@         strh r0, [r4, #BODY_T_Y]
-@@         b .Lcheck_h
-@@ .Lnegative_y:
-@@         tst r6, #0b11
-@@         beq .Lcheck_h
-@@         @@ okay, we hit a roof
-@@         mov r0, #0
-@@         strh r0, [r4, #BODY_T_VY]
-@@         ldrsh r0, [r4, #BODY_T_Y]
-@@         add r0, r0, #1<<PHYS_FIXED_POINT
-@@         bic r0, r0, #0xf
-@@         strh r0, [r4, #BODY_T_Y]
+        mov r4, #0
+        @@ r0 = upper-left-most tile offset
+        @@ top tiles: r0, r0+1, r0+2 (if r3 = 1)
+        ldrh r1, [r6, r0]
+        tst r1, #0xff
+        orrne r4, #PFCD_LEFT
+        add r0, r0, #2
+        ldrh r2, [r6, r0]
+        orr r1, r1, r2
+        cmp r3, #1
+        bne 1f
+        add r0, r0, #2
+        ldrh r2, [r6, r0]
+        orr r1, r1, r2
+1:      tst r1, #0xff
+        orrne r4, #PFCD_TOP
+        tst r2, #0xff
+        orrne r4, #PFCD_RIGHT
 
-@@ .Lcheck_h:
-@@         ldrsh r0, [r4, #BODY_T_VX]
-@@         cmp r0, #0
-@@         beq .Ldone_checking
-@@         bmi .Lnegative_x
-@@         tst r6, #0b1010
-@@         beq .Ldone_checking
-@@         mov r0, #0
-@@         strh r0, [r4, #BODY_T_VX]
-@@         ldrsh r0, [r4, #BODY_T_X]
-@@         sub r0, r0, #1<<PHYS_FIXED_POINT
-@@         bic r0, r0, #0xf
-@@         strh r0, [r4, #BODY_T_X]
-@@         b .Ldone_checking
+        @@ middle tiles, walking backwards
+        add r0, r0, r9, lsl #1
+        ldrh r1, [r6, r0]
+        tst r1, #0xff
+        orrne r4, #PFCD_RIGHT
+        sub r0, r0, #2
+        ldrh r2, [r6, r0]
+        orr r1, r1, r2
+        cmp r3, #1
+        bne 1f
+        sub r0, r0, #2
+        ldrh r2, [r6, r0]
+        orr r1, r1, r2
+1:      tst r2, #0xff
+        orrne r4, #PFCD_LEFT
 
-@@ .Lnegative_x:
-@@         tst r6, #0b101
-@@         beq .Ldone_checking
-@@         mov r0, #0
-@@         strh r0, [r4, #BODY_T_VX]
-@@         ldrsh r0, [r4, #BODY_T_X]
-@@         add r0, r0, #1<<PHYS_FIXED_POINT
-@@         bic r0, r0, #0xf
-@@         strh r0, [r4, #BODY_T_X]
+        @@ bottom tiles
+        add r0, r0, r9, lsl #1
+        ldrh r1, [r6, r0]
+        cmp r1, #0
+        orrne r4, #PFCD_LEFT
+        add r0, r0, #2
+        ldrh r2, [r6, r0]
+        orr r1, r1, r2
+        cmp r3, #1
+        bne 1f
+        add r0, r0, #2
+        ldrh r2, [r6, r0]
+        orr r1, r1, r2
+1:      tst r1, #0xff
+        orrne r4, #PFCD_BOTTOM
+        tst r2, #0xff
+        orrne r4, #PFCD_RIGHT
 
-@@ .Ldone_checking:
+        ldmfd sp!, {r1,r2,r8}
+
+        cmp r7, #0
+        beq .Lcheck_h
+        bmi .Lnegative_y
+        tst r4, #PFCD_BOTTOM
+        beq .Lcheck_h
+        @@ we're on a floor
+        sub r8, r8, r7
+        mov r7, #0
+        b .Lcheck_h
+.Lnegative_y:
+        tst r4, #PFCD_TOP
+        beq .Lcheck_h
+        @@ okay, we hit a roof
+        sub r8, r8, r7
+        mov r7, #0
+
+.Lcheck_h:
+        cmp r1, #0
+        beq .Ldone_checking
+        bmi .Lnegative_x
+        tst r4, #PFCD_RIGHT
+        beq .Ldone_checking
+        sub r2, r2, r1
+        mov r1, #0
+        b .Ldone_checking
+
+.Lnegative_x:
+        tst r4, #PFCD_LEFT
+        beq .Ldone_checking
+        sub r2, r2, r1
+        mov r1, #0
+
+.Ldone_checking:
 
         @@ Clip against the sides of the world
         ldr r6, [r5, #ARENA_T_MIDGROUND_PTR]
         ldrb r9, [r6], #1
         ldrb r10, [r6], #1
         @@ r9,r10,r6 = width, height, map ptr
-        ldrb r0, [r5, #ARENA_T_FLAGS]
+        ldrb r3, [r5, #ARENA_T_FLAGS]
 .Lright_side:
         cmp r1, #0
         blt .Lleft_side
         cmp r2, r9, lsl #3+PHYS_FIXED_POINT
         blt .Ltop_side
-        tst r0, #ARENA_FLAG_WRAP_H
+        tst r3, #ARENA_FLAG_WRAP_H
         bne 1f
         mov r2, r9, lsl #3+PHYS_FIXED_POINT
         mov r1, #0
@@ -754,7 +775,7 @@ update_body_motion:
 .Lleft_side:
         cmp r2, #0
         bgt .Ltop_side
-        tst r0, #ARENA_FLAG_WRAP_H
+        tst r3, #ARENA_FLAG_WRAP_H
         bne 1f
         mov r2, #0
         mov r1, #0
@@ -766,7 +787,7 @@ update_body_motion:
         blt .Lbottom_side
         cmp r8, r10, lsl #3+PHYS_FIXED_POINT
         blt .Ldone_clipping
-        tst r0, #ARENA_FLAG_WRAP_V
+        tst r3, #ARENA_FLAG_WRAP_V
         bne 1f
         mov r8, r10, lsl #3+PHYS_FIXED_POINT
         mov r7, #0
@@ -776,7 +797,7 @@ update_body_motion:
 .Lbottom_side:
         cmp r8, #0
         bgt .Ldone_clipping
-        tst r0, #ARENA_FLAG_WRAP_V
+        tst r3, #ARENA_FLAG_WRAP_V
         bne 1f
         mov r8, #0
         mov r7, #0
