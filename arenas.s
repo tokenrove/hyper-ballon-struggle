@@ -14,6 +14,10 @@ arena_table:
 @@@   wrap v
 @@@ .byte gravity
 @@@ .hword reserved
+@@@ .byte spawn 1 x
+@@@ .byte spawn 1 y
+@@@ .byte spawn 2 x
+@@@ .byte spawn 2 y
 @@@ .word palette_ptr
 @@@ .word midground_ptr
 @@@ .word background_ptr if b bit set
@@ -22,8 +26,10 @@ arena_table:
         .align 2
 default:
         .byte 0b0101
-        .byte 10
+        .byte 4
         .hword 0
+        .byte 42,100
+        .byte 90,10
         .word default_palette
         .word default_midground
         .word default_background

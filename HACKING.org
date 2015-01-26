@@ -78,7 +78,60 @@ Single BG tilemap for now.
 We'll probably do some scrolling tilemap layers here.  Either include
 a nice font and do the credits as a font layer, or just write the
 credits as an image since there aren't many.
+* In-game structures
+** Archetype
 
+| Field           | Offset | Type            | Note                                          |
+|-----------------+--------+-----------------+-----------------------------------------------|
+| name            |      0 | 8 bytes, ASCIIZ |                                               |
+| strength        |      8 | u8              | How much force does a flap provide?           |
+| stamina         |      9 | u8              | How much can you flap before needing a break? |
+| mass            |     10 | u8              | How heavy are you?                            |
+| <unused>        |     11 |                 |                                               |
+| default palette |     12 | pair of u8      | Each byte is an index into palette table      |
+| alt. palette    |     14 | pair of u8      |                                               |
+| fly frame       |     16 | ptr             | Default frame (tile data)                     |
+| bump frame      |     20 | ptr             | Getting bumped frame                          |
+| die frame       |     24 | ptr             | Losing frame                                  |
+| win frame       |     28 | ptr             | Winning frame                                 |
+
+** Body
+
+Both balloons and balloonists are bodies.
+
+x and y will be placed approximately in the center of the object; so
+to place a sprite, remove half the width and height.
+
+| Field        | Offset | Type       | Note                 |
+|--------------+--------+------------+----------------------|
+| x            |      0 | 12.4 fixed |                      |
+| y            |      2 | 12.4 fixed |                      |
+| vx           |      4 | 12.4 fixed |                      |
+| vy           |      6 | 12.4 fixed |                      |
+| impulse_x    |      8 | 12.4 fixed | reset to 0 each tick |
+| impulse_y    |     10 | 12.4 fixed |                      |
+| collide type |     12 | u8         | 0 = 8x8, 1 = 16x16   |
+| mass         |     13 | u8         |                      |
+
+
+** Balloonist
+
+| Field           | Offset | Type        | Note                                                                                   |
+|-----------------+--------+-------------+----------------------------------------------------------------------------------------|
+| body            |      0 | struct      | inline; plus padding                                                                   |
+| archetype       |     16 | ptr         | direct pointer to this character's entry in the archetype table                        |
+| exertion        |     20 | 12.4 fixed? | how tired we are, based on stamina and number of recent flaps                          |
+| tile offset     |     22 | u16         | number of tiles from the start of sprite tile VRAM where this balloonist's frames live |
+| frame + facing  |     24 | u8          | bit 0 = facing, rest = current frame in given animation <<1                            |
+| frame delay     |     25 | u8          | number of frames til next frame                                                        |
+| animation       |     26 | u8          | sign bit indicates whether the animation has looped or not                             |
+| balloons        |     27 | u8 bitfield | each bit set corresponds to a position in the balloon table                            |
+| invulnerability |     28 | u8          | number of frames this balloonist's balloons can't be popped                            |
+| who am I?       |     29 | u8          | 1 = player, 2 = enemy; also serves as palette offset                                   |
+
+(until animations are implemented, current frame will be an absolute
+frame -- i.e., the balloonist's sprite tile index should be tile
+offset + frame)
 
 * Art resources, as I found them
 

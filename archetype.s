@@ -18,18 +18,18 @@
 archetype_table:
         .asciz "Retsyn"
         .balign 8
-        .byte 1                 @ strength
-        .byte 1                 @ stamina
-        .byte 10                @ mass
+        .byte 40                @ strength
+        .byte 50                @ stamina
+        .byte 80                @ mass
         .byte 0
         .byte PALETTE_BLUE, PALETTE_GREEN
         .byte PALETTE_GOTH, PALETTE_BEARD
         .word retsyn_fly, retsyn_bump, retsyn_die, retsyn_win
 
         .asciz "Rudolph"
-        .byte 1                 @ strength
-        .byte 1                 @ stamina
-        .byte 10                @ mass
+        .byte 50                @ strength
+        .byte 80                @ stamina
+        .byte 100               @ mass
         .byte 0
         .byte PALETTE_RED, PALETTE_YELLOW
         .byte PALETTE_GREEN, PALETTE_BLUE

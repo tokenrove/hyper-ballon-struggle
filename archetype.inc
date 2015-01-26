@@ -1,5 +1,14 @@
 @@@ -*- mode: asm; -*-
 
+        .equ ARCHETYPE_T_NAME, 0
+        .equ ARCHETYPE_T_STRENGTH, 8
+        .equ ARCHETYPE_T_STAMINA, 9
+        .equ ARCHETYPE_T_MASS, 10
+        .equ ARCHETYPE_T_UNUSED, 11
+        .equ ARCHETYPE_T_DEFAULT_PALETTE, 12
+        .equ ARCHETYPE_T_ALTERNATE_PALETTE, 14
+        .equ ARCHETYPE_T_FRAME_PTRS, 16
+
         .equ CHAR_RETSYN, 0
         .equ CHAR_RUDOLPH, 1
         .equ CHAR_RALPH, 2

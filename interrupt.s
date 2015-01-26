@@ -70,8 +70,9 @@ input_update:
         ldrh r0, [r0]
         ldr r1, =key_input
         ldrh r2, [r1]
+        eor r2, r0, r2
         mvn r2, r2
-        and r2, r0, r2
+        orr r2, r0, r2
         strh r0, [r1], #2
         strh r2, [r1]
         mov pc, lr

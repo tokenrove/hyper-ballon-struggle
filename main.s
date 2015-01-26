@@ -8,8 +8,9 @@
 	.align
 
 	.include "gba.inc"
-        .include "constants.inc"
+        .include "game.inc"
         .include "archetype.inc"
+        .include "arenas.inc"
 
 @ main
 @   program entry point.  never returns.
@@ -113,8 +114,6 @@ init:
         ldmfd sp!, {pc}
 
         .section .rodata
-
-        .equ ARENA_DEFAULT, 0
 
         @@ levels format:
         @@ one byte each: palette, alt. palette, character, arena

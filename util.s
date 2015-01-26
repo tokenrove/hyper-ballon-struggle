@@ -17,7 +17,7 @@ wait_for_start_toggled:
         ldr r2, =debounce
         ldrh r3, [r2]
         tst r3, #0b1000		@ start button
-        beq 0b
+        bne 0b
 
         @@ make noise
         mov r0, #4

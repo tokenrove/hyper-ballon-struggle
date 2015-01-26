@@ -121,8 +121,8 @@ select_character:
         ldr r2, =debounce
         ldrh r4, [r2]
 
-        tst r4, #0x10           @ R
-        beq 1f
+        tst r4, #0x10           @ right
+        bne 1f
 
         mov r7, #0
         bl load_new_palette_for_r6
@@ -131,8 +131,8 @@ select_character:
         movgt r6, #1
         b 2f
 
-1:      tst r4, #0x20           @ L
-        beq 1f
+1:      tst r4, #0x20           @ left
+        bne 1f
 
         mov r7, #0
         bl load_new_palette_for_r6
@@ -140,8 +140,8 @@ select_character:
         moveq r6, #ARCHETYPES_ON_A_PAGE
         b 2f
 
-1:      tst r4, #0x40           @ U
-        beq 1f
+1:      tst r4, #0x40           @ up
+        bne 1f
 
         mov r7, #0
         bl load_new_palette_for_r6
@@ -149,8 +149,8 @@ select_character:
         addle r6, r6, #ARCHETYPES_ON_A_PAGE
         b 2f
 
-1:      tst r4, #0x80           @ D
-        beq 2f
+1:      tst r4, #0x80           @ down
+        bne 2f
 
         mov r7, #0
         bl load_new_palette_for_r6
@@ -159,7 +159,7 @@ select_character:
         subgt r6, r6, #ARCHETYPES_ON_A_PAGE
 
 2:      tst r4, #0x100		@ R trigger
-        beq 1f
+        bne 1f
 
         add r7, r7, #1
         and r7, r7, #ALTERNATE_PALETTES_MASK
@@ -167,14 +167,14 @@ select_character:
         b 2f
 
 1:	tst r4, #0x200		@ L trigger
-        beq 2f
+        bne 2f
 
         sub r7, r7, #1
         and r7, r7, #ALTERNATE_PALETTES_MASK
         bl load_new_palette_for_r6
 
 2:	tst r4, #0b1000		@ start button
-        beq 0b
+        bne 0b
 
         @@ make noise
         stmfd sp!, {r0-r2,lr}
