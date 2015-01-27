@@ -36,6 +36,8 @@
         .equ BALLOON_LIFT, -20
         .equ BALLOON_DISTANCE, 30
 
+        .equ BLINK_TIME, 60
+
         .equ BODY_T_X, 0
         .equ BODY_T_Y, 2
         .equ BODY_T_VX, 4
@@ -69,10 +71,10 @@
         .lcomm arena, 4
 
         .section .text
-	.arm
-	.align
+        .arm
+        .align
 
-	.include "gba.inc"
+        .include "gba.inc"
 
 @@@ play_game(r0 = us, r1 = our color, r2 = them, r3 = their color, r4 = arena)
         .global play_game
@@ -115,19 +117,21 @@ play_game:
         ldr r4, =balloonists
         bl apply_gravity
         bl human_input
+        bl process_invulnerability
         add r4, r4, #BALLOONIST_LEN
         bl apply_gravity
         bl enemy_action
+        bl process_invulnerability
 
         @@ CHECK COLLISIONS
         ldr r4, =balloonists
         add r6, r4, #BALLOONIST_LEN
         bl check_balloonist_balloonist_collision
-        @@ bl check_balloon_collisions
-        @@ eor r4, r4, r6
-        @@ eor r6, r4, r6
-        @@ eor r4, r4, r6
-        @@ bl check_balloon_collisions
+        bl check_balloon_collisions
+        eor r4, r4, r6
+        eor r6, r4, r6
+        eor r4, r4, r6
+        bl check_balloon_collisions
 
         @@ UPDATE MOTION
         ldr r4, =balloonists
@@ -404,10 +408,13 @@ render_balloonist:
         bne .Lnext_balloon
 
 .Ldone:
+        ldrb r1, [r4, #ACTOR_T_INVULNERABILITY]
+        tst r1, #0b1
+        bne 9f
+
         ldrsh r1, [r4, #BODY_T_Y]  @ y coordinate
         asr r1, r1, #PHYS_FIXED_POINT
         sub r1, r1, #8
-        @@ FIXME: clip by y here
         and r1, r1, #0xff
         strh r1, [r0], #2
 
@@ -415,7 +422,6 @@ render_balloonist:
         ldrsh r1, [r4, #BODY_T_X]  @ x coordinate
         asr r1, r1, #PHYS_FIXED_POINT
         sub r1, r1, #8
-        @@ FIXME: clip by x here
         mov r2, #0x200
         sub r2, r2, #1
         and r1, r1, r2
@@ -436,7 +442,7 @@ render_balloonist:
         mov r1, #0
         strh r1, [r0], #2
 
-        ldmfd sp!, {pc}
+9:      ldmfd sp!, {pc}
 
 
 @ FIXME replace raw compares with table lookups of player speeds
@@ -532,11 +538,19 @@ apply_gravity:
         strh r1, [r4, #BODY_T_IMPULSE_Y]
         mov pc,lr
 
+        @@ r4 = balloonist
+process_invulnerability:
+        ldrb r0, [r4, #ACTOR_T_INVULNERABILITY]
+        subs r0, r0, #1
+        movle r0, #0
+        strb r0, [r4, #ACTOR_T_INVULNERABILITY]
+        mov pc, lr
+
 
         @@ r4 = this balloonist
         @@ r5 = arena
 update_balloonist_motion:
-	stmfd sp!, {lr}
+        stmfd sp!, {lr}
 
         @@ update balloons
         ldrb r6, [r4, #ACTOR_T_BALLOONS]   @ number of balloons
@@ -565,7 +579,7 @@ update_balloonist_motion:
         mul r2, r0, r0
         mla r2, r1, r1, r2
 
-        cmp r2, #BALLOON_DISTANCE<<PHYS_FIXED_POINT
+        subs r2, #BALLOON_DISTANCE*BALLOON_DISTANCE
         blt 1f
         @@ bring balloons closer
         strh r7, [r4, #BODY_T_X]
@@ -888,25 +902,26 @@ check_balloonist_balloonist_collision:
         stmfd sp!, {lr}
 
         bl check_body_collision
+        mov r1, #FRAME_FLY
         bge .Lno_collision
 
-        @@ collision response
-        ldrb r0, [r4, #ACTOR_T_FRAME]
-        and r0, r0, #1
-        orr r0, r0, #FRAME_BUMP<<1
-        strb r0, [r4, #ACTOR_T_FRAME]
-        ldrb r0, [r6, #ACTOR_T_FRAME]
-        and r0, r0, #1
-        orr r0, r0, #FRAME_BUMP<<1
-        strb r0, [r6, #ACTOR_T_FRAME]
-        ldmfd sp!, {pc}
+        @@ make bump noise
+        mov r0, #3
+        mov r1, #0
+        mov r2, #0x540
+        bl music_play_sfx
 
+        @@ collision response
+
+        mov r1, #FRAME_BUMP
 .Lno_collision:
         ldrb r0, [r4, #ACTOR_T_FRAME]
         and r0, r0, #1
+        orr r0, r0, r1, lsl #1
         strb r0, [r4, #ACTOR_T_FRAME]
         ldrb r0, [r6, #ACTOR_T_FRAME]
         and r0, r0, #1
+        orr r0, r0, r1, lsl #1
         strb r0, [r6, #ACTOR_T_FRAME]
         ldmfd sp!, {pc}
 
@@ -914,7 +929,7 @@ check_balloonist_balloonist_collision:
         @@ r4 = balloonist
         @@ r6 = other balloonist
 check_balloon_collisions:
-        stmfd sp!, {lr}
+        stmfd sp!, {r5,lr}
         ldrb r9, [r4, #ACTOR_T_IDENTITY]
         ldrb r5, [r4, #ACTOR_T_BALLOONS]   @ number of balloons
         ldr r3, =balloons
@@ -928,41 +943,49 @@ check_balloon_collisions:
         addeq r3, r3, #BODY_LEN
         beq 0b
 
-        @@ check balloons against each-other
+        ldrb r0, [r4, #ACTOR_T_INVULNERABILITY]
+        cmp r0, #0
+        bne 1f
         @@ check balloons against opponent
-        stmfd sp!, {r4,r6}
+        stmfd sp!, {r3,r4}
         mov r4, r3
-        ldmfd sp!, {r4,r6}
+        bl check_body_collision
+        blt .Ldo_damage
+        ldmfd sp!, {r3,r4}
+
+1:      @@ check balloons against each-other
 
         add r3, r3, #BODY_LEN
         lsrs r5, r5, #1
         bne 0b
 
 .Lno_more_balloons:
-        ldmfd sp!, {pc}
+        ldmfd sp!, {r5,pc}
 
+        @@ a balloon got popped; we don't care about the other
+        @@ balloons right now.
+.Ldo_damage:
+        ldmfd sp!, {r3,r4}
+        @@ XXX should set popping counter for balloon
+        ldr r0, =balloons
+        sub r0, r3, r0
+        lsr r0, r0, #4                   @ log2(BODY_LEN)
+        ldrb r5, [r4, #ACTOR_T_BALLOONS]   @ number of balloons
+        mov r1, #1
+        lsl r0, r1, r0
+        bic r5, r0
+        strb r5, [r4, #ACTOR_T_BALLOONS]   @ number of balloons
+        mov r0, #BLINK_TIME
+        strb r0, [r4, #ACTOR_T_INVULNERABILITY]
 
-        @@ r4 = defender
-        @@ r6 = attacker
-do_damage:
-        stmfd sp!, {r0-r3,lr}
-        ldrb r2, [r4, #3]	@ n_balloons
-	subs r2, r2, #1
-        bgt 1f
-
-	@ deal with popping
-        mov r2, #0
-
-1:	strb r2, [r4, #3]
-
-        @@ make noise
+        @@ make pop! noise
         mov r0, #3
         mov r1, #0
         mov r2, #0x510
         bl music_play_sfx
 
-        ldmfd sp!, {r0-r3,pc}
-@ EOR do_damage
+        ldmfd sp!, {r5,pc}
+
 
         .section .rodata
         .align
