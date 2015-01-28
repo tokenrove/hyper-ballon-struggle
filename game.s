@@ -743,6 +743,12 @@ update_body_motion:
         mla r0, r8, r9, r2
         lsl r0, r0, #1
 
+        @@ replace r10 with maximum offset of the map
+        mul r2, r9, r10
+        mov r10, r2, lsl #1
+        @@ note that we should also be testing against the horizonal
+        @@ boundaries, possibly wrapping them.
+
         @@ walk the tiles in a boustrophedonic fashion
         @@ or'ing together the cases til you've reduced it to UDLR
         .equ PFCD_TOP, 1
@@ -771,6 +777,8 @@ update_body_motion:
 
         @@ middle tiles, walking backwards
         add r0, r0, r9, lsl #1
+        cmp r0, r10
+        bge 2f                  @ consider subtracting (to wrap) instead of skipping
         ldrh r1, [r6, r0]
         tst r1, #0xff
         orrne r4, #PFCD_RIGHT
@@ -787,6 +795,8 @@ update_body_motion:
 
         @@ bottom tiles
         add r0, r0, r9, lsl #1
+        cmp r0, r10
+        bge 2f
         ldrh r1, [r6, r0]
         cmp r1, #0
         orrne r4, #PFCD_LEFT
@@ -803,7 +813,7 @@ update_body_motion:
         tst r2, #0xff
         orrne r4, #PFCD_RIGHT
 
-        ldmfd sp!, {r1,r2,r8}
+2:      ldmfd sp!, {r1,r2,r8}
 
         cmp r7, #0
         beq .Lcheck_h
@@ -866,6 +876,7 @@ update_body_motion:
         cmp r7, #0
         blt .Lbottom_side
         mov r3, r10, lsl #3+PHYS_FIXED_POINT
+        add r3, r3, #8
         cmp r8, r3
         blt .Ldone_clipping
         mov r8, r3
