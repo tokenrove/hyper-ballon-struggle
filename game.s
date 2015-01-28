@@ -173,6 +173,13 @@ play_game:
         mov r1, #FRAME_WIN<<1
         strb r1, [r6, #ACTOR_T_FRAME]
 
+        @@ ensure we're not flashing
+        mov r0, #0
+        strb r1, [r4, #ACTOR_T_INVULNERABILITY]
+        strb r1, [r6, #ACTOR_T_INVULNERABILITY]
+
+        @@ XXX play falling sound here
+
         @@ crude hack to show the loser plumetting
 0:      stmfd sp!, {r5}
         bl gfx_wait_vblank
