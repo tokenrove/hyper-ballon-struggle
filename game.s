@@ -139,6 +139,11 @@ play_game:
         add r4, r4, #BALLOONIST_LEN
         bl update_balloonist_motion
 
+        ldr r4, =balloonists
+        bl apply_arena_wrapping
+        add r4, r4, #BALLOONIST_LEN
+        bl apply_arena_wrapping
+
         @@ check if any terminating condition occurred
         ldr r4, =balloonists
         add r6, r4, #BALLOONIST_LEN
@@ -843,49 +848,36 @@ update_body_motion:
 .Lright_side:
         cmp r1, #0
         blt .Lleft_side
-        cmp r2, r9, lsl #3+PHYS_FIXED_POINT
+        mov r3, r9, lsl #3+PHYS_FIXED_POINT
+        add r3, r3, #8
+        cmp r2, r3
         blt .Ltop_side
-        tst r3, #ARENA_FLAG_WRAP_H
-        bne 1f
-        mov r2, r9, lsl #3+PHYS_FIXED_POINT
+        mov r2, r3
         mov r1, #0
-        b .Ltop_side
-1:      sub r2, r2, r9, lsl #3+PHYS_FIXED_POINT
         b .Ltop_side
 .Lleft_side:
-        cmp r2, #0
+        cmp r2, #-8
         bgt .Ltop_side
-        tst r3, #ARENA_FLAG_WRAP_H
-        bne 1f
-        mov r2, #0
+        mov r2, #-8
         mov r1, #0
         b .Ltop_side
-1:      add r2, r2, r9, lsl #3+PHYS_FIXED_POINT
 
 .Ltop_side:
         cmp r7, #0
         blt .Lbottom_side
-        cmp r8, r10, lsl #3+PHYS_FIXED_POINT
+        mov r3, r10, lsl #3+PHYS_FIXED_POINT
+        cmp r8, r3
         blt .Ldone_clipping
-        tst r3, #ARENA_FLAG_WRAP_V
-        bne 1f
-        mov r8, r10, lsl #3+PHYS_FIXED_POINT
+        mov r8, r3
         mov r7, #0
-        b .Ldone_clipping
-1:      sub r8, r8, r10, lsl #3+PHYS_FIXED_POINT
         b .Ldone_clipping
 .Lbottom_side:
-        cmp r8, #0
+        cmp r8, #-8
         bgt .Ldone_clipping
-        tst r3, #ARENA_FLAG_WRAP_V
-        bne 1f
-        mov r8, #0
+        mov r8, #-8
         mov r7, #0
-        b .Ldone_clipping
-1:      add r8, r8, r10, lsl #3+PHYS_FIXED_POINT
 
 .Ldone_clipping:
-
         ldmfd sp!, {r0,r4,r6}
 
 .Lafter_playfield_collision:
@@ -952,6 +944,67 @@ check_body_collision:
         @@ the important thing here is the cpsr_flag value
 9:      ldmfd sp!, {pc}
 
+
+        @@ r4 = balloonist
+        @@ r5 = arena
+apply_arena_wrapping:
+        stmfd sp!, {r6,r9,r10,lr}
+        ldrb r3, [r5, #ARENA_T_FLAGS]
+        tst r3, #ARENA_FLAG_WRAP_H | ARENA_FLAG_WRAP_V
+        beq 9f                  @ nothing to do
+
+        @@ get world dimensions
+        ldr r0, [r5, #ARENA_T_MIDGROUND_PTR]
+        ldrb r9, [r0], #1
+        ldrb r10, [r0], #1
+        lsl r9, #3+PHYS_FIXED_POINT
+        lsl r10, #3+PHYS_FIXED_POINT
+        @@ r9,r10 = width, height
+        mov r2, #0
+        mov r6, #0
+        tst r3, #ARENA_FLAG_WRAP_H
+        beq 3f
+        ldrsh r0, [r4, #BODY_T_X]
+        cmp r0, #0
+        movlt r2, r9
+        cmp r0, r9
+        movgt r2, r9
+        rsbgt r2, r2, #0
+        add r0, r0, r2
+        strh r0, [r4, #BODY_T_X]
+3:      tst r3, #ARENA_FLAG_WRAP_V
+        beq 3f
+        ldrsh r0, [r4, #BODY_T_Y]
+        cmp r0, #0
+        movlt r6, r10
+        cmp r0, r10
+        movgt r6, r10
+        rsbgt r6, r6, #0
+        add r0, r0, r6
+        strh r0, [r4, #BODY_T_Y]
+
+3:      cmp r2, #0
+        bne 3f
+        cmp r6, #0
+        beq 9f
+3:      @@ make same adjustment to balloons
+        ldr r3, =balloons
+        ldrb r1, [r4, #ACTOR_T_IDENTITY]
+        sub r1, r1, #1
+        add r3, r3, r1, lsl #7  @ log2(BODY_LEN*MAX_BALLOONS)
+        sub r3, r3, #BODY_LEN
+        ldrb r1, [r4, #ACTOR_T_BALLOONS]
+1:      lsrs r1, #1
+        add r3, r3, #BODY_LEN
+        ldrsh r0, [r3, #BODY_T_X]
+        addcs r0, r0, r2        @ that bit was set
+        strh r0, [r3, #BODY_T_X]
+        ldrsh r0, [r3, #BODY_T_Y]
+        addcs r0, r0, r6        @ that bit was set
+        strh r0, [r3, #BODY_T_Y]
+        bne 1b                  @ more bits
+
+9:      ldmfd sp!, {r6,r9,r10,pc}
 
         @@ r4 = body A
         @@ r6 = body B
