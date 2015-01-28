@@ -1063,54 +1063,56 @@ check_balloonist_balloonist_collision:
         @@ r4 = balloonist
         @@ r6 = other balloonist
 check_balloon_collisions:
-        stmfd sp!, {r5,lr}
-        ldrb r9, [r4, #ACTOR_T_IDENTITY]
+        stmfd sp!, {r4,r5,r7,r9-r12,lr}
+        ldrb r2, [r4, #ACTOR_T_IDENTITY]
+        ldrb r9, [r4, #ACTOR_T_INVULNERABILITY]
         ldrb r5, [r4, #ACTOR_T_BALLOONS]   @ number of balloons
-        ldr r3, =balloons
-        sub r2, r9, #1
-        add r3, r3, r2, lsl #7 @ log2(BODY_LEN*MAX_BALLOONS)
-0:
-        cmp r5, #0
+        mov r7, r4
+        ldr r4, =balloons
+        sub r2, r2, #1
+        add r4, r4, r2, lsl #7 @ log2(BODY_LEN*MAX_BALLOONS)
+
+        @@ next set bit
+0:      cmp r5, #0
         beq .Lno_more_balloons
         tst r5, #1
         lsreq r5, r5, #1
-        addeq r3, r3, #BODY_LEN
+        addeq r4, r4, #BODY_LEN
         beq 0b
 
-        ldrb r0, [r4, #ACTOR_T_INVULNERABILITY]
-        cmp r0, #0
+        @@ skip balloon/actor check if our owner is invulnerable
+        cmp r9, #0
         bne 1f
         @@ check balloons against opponent
-        stmfd sp!, {r3,r4}
-        mov r4, r3
         bl check_body_collision
         blt .Ldo_damage
-        ldmfd sp!, {r3,r4}
 
 1:      @@ check balloons against each-other
 
-        add r3, r3, #BODY_LEN
+        add r4, r4, #BODY_LEN
         lsrs r5, r5, #1
         bne 0b
 
 .Lno_more_balloons:
-        ldmfd sp!, {r5,pc}
+        b 9f
 
         @@ a balloon got popped; we don't care about the other
         @@ balloons right now.
 .Ldo_damage:
-        ldmfd sp!, {r3,r4}
         @@ XXX should set popping counter for balloon
         ldr r0, =balloons
-        sub r0, r3, r0
+        sub r0, r4, r0
         lsr r0, r0, #4                   @ log2(BODY_LEN)
-        ldrb r5, [r4, #ACTOR_T_BALLOONS]   @ number of balloons
+        ldrb r1, [r7, #ACTOR_T_IDENTITY]
+        sub r1, r1, #1
+        sub r0, r0, r1, lsl #3           @ log2(MAX_BALLOONS)
+        ldrb r5, [r7, #ACTOR_T_BALLOONS]   @ number of balloons
         mov r1, #1
         lsl r0, r1, r0
         bic r5, r0
-        strb r5, [r4, #ACTOR_T_BALLOONS]   @ number of balloons
+        strb r5, [r7, #ACTOR_T_BALLOONS]   @ number of balloons
         mov r0, #BLINK_TIME
-        strb r0, [r4, #ACTOR_T_INVULNERABILITY]
+        strb r0, [r7, #ACTOR_T_INVULNERABILITY]
 
         @@ make pop! noise
         mov r0, #3
@@ -1118,7 +1120,7 @@ check_balloon_collisions:
         mov r2, #0x510
         bl music_play_sfx
 
-        ldmfd sp!, {r5,pc}
+9:      ldmfd sp!, {r4,r5,r7,r9-r12,pc}
 
 
         .section .rodata
