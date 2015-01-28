@@ -53,8 +53,9 @@ gfx_set_mode_1:
 @@@ Requires that interrupts be enabled.
         .global gfx_wait_vblank
 gfx_wait_vblank:
+        stmfd sp!, {r0,r1,r3,lr}
         swi #5<<16
-        bx lr
+        ldmfd sp!, {r0,r1,r3,pc}
 
 
 @
