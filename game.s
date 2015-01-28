@@ -141,10 +141,13 @@ play_game:
 
         @@ check if any terminating condition occurred
         ldr r4, =balloonists
+        add r6, r4, #BALLOONIST_LEN
         ldrb r2, [r4, #ACTOR_T_BALLOONS]   @ number of balloons
         cmp r2, #0
         beq .Lmatch_finished
-        add r4, r4, #BALLOONIST_LEN
+        mov r0, r4
+        mov r4, r6
+        mov r6, r0
         ldrb r2, [r4, #ACTOR_T_BALLOONS]   @ number of balloons
         cmp r2, #0
         beq .Lmatch_finished
@@ -164,8 +167,34 @@ play_game:
         b .Lcoreloop
 
 .Lmatch_finished:
-        ldrb r0, [r4, #ACTOR_T_IDENTITY]
-        cmp r0, #1
+        ldrb r5, [r4, #ACTOR_T_IDENTITY]
+        mov r1, #FRAME_DIE<<1
+        strb r1, [r4, #ACTOR_T_FRAME]
+        mov r1, #FRAME_WIN<<1
+        strb r1, [r6, #ACTOR_T_FRAME]
+
+        @@ crude hack to show the loser plumetting
+0:      stmfd sp!, {r5}
+        bl gfx_wait_vblank
+        mov r0, #oam_base
+        ldr r4, =balloonists
+        bl render_balloonist
+        add r4, r4, #BALLOONIST_LEN
+        bl render_balloonist
+
+        bl disable_remaining_sprites
+
+        ldmfd sp!, {r5}
+        ldr r4, =balloonists
+        cmp r5, #2
+        addeq r4, r4, #BALLOONIST_LEN
+        ldrsh r0, [r4, #BODY_T_Y]
+        add r0, r0, #1<<4
+        strh r0, [r4, #BODY_T_Y]
+        cmp r0, #160<<4
+        blt 0b
+
+        cmp r5, #1
         moveq r0, #OUTCOME_LOSE
         movne r0, #OUTCOME_WIN
         ldmfd sp!, {r5-r12,pc}
