@@ -1088,6 +1088,24 @@ check_balloon_collisions:
         blt .Ldo_damage
 
 1:      @@ check balloons against each-other
+        stmfd sp!, {r5,r6}
+        mov r6, r4
+2:      lsrs r5, r5, #1
+        beq 3f
+        add r6, r6, #BODY_LEN
+        tst r5, #1
+        beq 2b
+
+        bl check_body_collision
+        bge 2b
+        stmfd sp!, {r0-r12}
+        mov r7, r0
+        mov r8, r2
+        bl resolve_contact
+        ldmfd sp!, {r0-r12}
+        b 2b
+
+3:      ldmfd sp!, {r5,r6}
 
         add r4, r4, #BODY_LEN
         lsrs r5, r5, #1
