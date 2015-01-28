@@ -2,7 +2,7 @@
 	@ Instrument banks
 	.global instr_standard_sqr0
 instr_standard_sqr0:
-.word 0xd5000008
+.word 0x35000008,0xff3f005f
 
 	.global instr_standard_sqr1
 instr_standard_sqr1:
@@ -48,62 +48,12 @@ instr_standard_noise:
         .global instr_standard_samples
 instr_standard_samples:
 @ 0: pizzicato strings quarter note
-.hword 7210
+.hword inst_pop_len
 .hword 11025
-.word inst_pizzicato_q
+.word inst_pop
 
-@ 1: piano quarter note
-.hword 31687
-.hword 22050
-.word inst_piano_q
-
-@ 2: nylon guitar quarter note
-.hword 10502
-.hword 11025
-.word inst_nyguitar_q
-
-@ 3: analog flute
-.hword 3662
-.hword 11025
-.word inst_analog_flute
-
-@ 4: heavy metal kick, left
-.hword 2677
-.hword 11025
-.word inst_kick_left
-
-@ 5: heavy metal kick, right
-.hword 2189
-.hword 11025
-.word inst_kick_right
-
-@ 6: techno kick drum
-.hword 873
-.hword 13048
-.word inst_techno_kick
-
-@ 7: ride cymbal 1
-.hword 16036
-.hword 32000
-.word inst_ride_cymbal
-
-        .global inst_kick_left
-
-inst_piano_q: .incbin "samples/piano.sb"
-.align
-inst_pizzicato_q: .incbin "samples/pizzicato.sb"
-.align
-inst_nyguitar_q: .incbin "samples/nyguitar.sb"
-.align
-inst_analog_flute: .incbin "samples/analog_flute.sb"
-.align
-inst_kick_left: .incbin "samples/kick-left.sb"
-.align
-inst_kick_right: .incbin "samples/kick-right.sb"
-.align
-inst_techno_kick: .incbin "samples/techno_kick.sb"
-.align
-inst_ride_cymbal: .incbin "samples/ride_cymbal.sb"
-.align
+inst_pop: .incbin "samples/pop.sb"
+        .align
+        .equ inst_pop_len, .-inst_pop
 
 @ EOF instruments.s

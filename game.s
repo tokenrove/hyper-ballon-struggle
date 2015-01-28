@@ -178,7 +178,17 @@ play_game:
         strb r1, [r4, #ACTOR_T_INVULNERABILITY]
         strb r1, [r6, #ACTOR_T_INVULNERABILITY]
 
-        @@ XXX play falling sound here
+        @@ play falling sound
+        stmfd sp!, {r0-r3}
+        mov r0, #0
+        mov r1, #0x10
+        mov r2, #0xd000
+        bl music_play_sfx
+        mov r0, #0
+        mov r1, #0x130
+        mov r2, #0x0800
+        bl music_play_sfx
+        ldmfd sp!, {r0-r3}
 
         @@ crude hack to show the loser plumetting
 0:      stmfd sp!, {r5}
@@ -200,6 +210,15 @@ play_game:
         strh r0, [r4, #BODY_T_Y]
         cmp r0, #160<<4
         blt 0b
+
+        mov r0, #0
+        mov r1, #0
+        mov r2, #0x0000
+        bl music_play_sfx
+        mov r0, #3
+        mov r1, #0
+        ldr r2, =0b010000011000
+        bl music_play_sfx
 
         cmp r5, #1
         moveq r0, #OUTCOME_LOSE
@@ -1169,9 +1188,15 @@ check_balloon_collisions:
         strb r0, [r7, #ACTOR_T_INVULNERABILITY]
 
         @@ make pop! noise
-        mov r0, #3
+        mov r0, #5
         mov r1, #0
-        mov r2, #0x510
+        mov r2, #0x1000
+        orr r2, r2, #0x20
+        bl music_play_sfx
+        mov r0, #4
+        mov r1, #0
+        mov r2, #0x1000
+        orr r2, r2, #0x20
         bl music_play_sfx
 
 9:      ldmfd sp!, {r4,r5,r7,r9-r12,pc}

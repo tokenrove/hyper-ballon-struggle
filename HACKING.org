@@ -187,3 +187,13 @@ exactly clear what the layout is (looks like 32x32 with 8x8 tiles, but
 there are still some other bytes whose purpose I don't recall).  It
 will probably be faster to import ~mortimer~ from Convergence and use
 it to produce a background from the existing tiles.
+* Sounds and music
+
+It appears that the samples are in an uncompressed signed 8-bit mono
+format, with the rate specified in the instruments table, usually
+11025 Hz.
+
+To convert:
+#+BEGIN_EXAMPLE
+sox foo.wav -b 8 -e signed-integer -c 1 -r 11025 foo.sb
+#+END_EXAMPLE
