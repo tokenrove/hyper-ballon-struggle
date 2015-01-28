@@ -11,7 +11,7 @@
         .equ PHYS_FIXED_POINT, 4
         @@ Accounts for both the division by 2 required for correct
         @@ integration, and the fixed point fraction of mass
-        .equ IMPULSE_SCALING, 6
+        .equ IMPULSE_SCALING, 10
         @@ Terminal velocity
         .equ TERMINAL_VELOCITY, 16
         @@ Collision radii squared
@@ -32,8 +32,8 @@
         .equ N_BALLOONISTS,2
         .equ MAX_BALLOONS,8
 
-        .equ BALLOON_MASS, 1
-        .equ BALLOON_LIFT, -20
+        .equ BALLOON_MASS, 0xff
+        .equ BALLOON_LIFT, -10
         .equ BALLOON_DISTANCE, 30
 
         .equ BLINK_TIME, 60
@@ -128,9 +128,9 @@ play_game:
         add r6, r4, #BALLOONIST_LEN
         bl check_balloonist_balloonist_collision
         bl check_balloon_collisions
-        eor r4, r4, r6
-        eor r6, r4, r6
-        eor r4, r4, r6
+        mov r0, r4
+        mov r4, r6
+        mov r6, r0
         bl check_balloon_collisions
 
         @@ UPDATE MOTION
@@ -462,19 +462,21 @@ human_input:
 
         tst r1, #0x10
         bne 1f
-        mov r3, #8
+        mov r3, #1<<(IMPULSE_SCALING-2)
         strh r3, [r4, #BODY_T_IMPULSE_X]
 1:      tst r1, #0x20
         bne 1f
-        mov r3, #-8
+        mov r3, #-1
+        lsl r3, #IMPULSE_SCALING-2
         strh r3, [r4, #BODY_T_IMPULSE_X]
 1:      tst r1, #0x40
         bne 1f
-        mov r3, #-8
+        mov r3, #-1
+        lsl r3, #IMPULSE_SCALING-2
         strh r3, [r4, #BODY_T_IMPULSE_Y]
 1:      tst r1, #0x80
         bne 1f
-        mov r3, #16
+        mov r3, #2<<(IMPULSE_SCALING-2)
         strh r3, [r4, #BODY_T_IMPULSE_Y]
 1:      ldmfd sp!, {pc}
 
@@ -485,8 +487,8 @@ human_input:
         @@ XXX maybe give us a little extra impulse on the frame after debounce?
         ldrsh r3, [r4, #BODY_T_IMPULSE_Y]
         ldr r0, [r4, #ACTOR_T_ARCHETYPE_PTR]
-        ldrb r0, [r0, #ARCHETYPE_T_STRENGTH]
-        sub r3, r3, r0, lsl #1
+        @@ ldrb r0, [r0, #ARCHETYPE_T_STRENGTH]
+        sub r3, r3, #2<<(IMPULSE_SCALING-2)
         @@ XXX this is where the flap abstraction needs to happen
         strh r3, [r4, #BODY_T_IMPULSE_Y]
 
@@ -496,7 +498,7 @@ human_input:
         bic r3, r3, #1          @ face right
         strb r3, [r4, #ACTOR_T_FRAME]
         ldrsh r3, [r4, #BODY_T_IMPULSE_X]
-        add r3, r3, #16
+        add r3, r3, #2<<(IMPULSE_SCALING-2)
         strh r3, [r4, #BODY_T_IMPULSE_X]
         b 9f
 
@@ -506,7 +508,7 @@ human_input:
         orr r3, r3, #1          @ face left
         strb r3, [r4, #ACTOR_T_FRAME]
         ldrsh r3, [r4, #BODY_T_IMPULSE_X]
-        sub r3, r3, #16
+        sub r3, r3, #2<<(IMPULSE_SCALING-2)
         strh r3, [r4, #BODY_T_IMPULSE_X]
 
 .Lnot_flapping:
@@ -553,16 +555,16 @@ update_balloonist_motion:
         stmfd sp!, {lr}
 
         @@ update balloons
-        ldrb r6, [r4, #ACTOR_T_BALLOONS]   @ number of balloons
+        ldrb r9, [r4, #ACTOR_T_BALLOONS]   @ number of balloons
         ldrsh r7, [r4, #BODY_T_X]
         ldrsh r8, [r4, #BODY_T_Y]
-        ldrb r9, [r4, #ACTOR_T_IDENTITY]
+        mov r6, r4
         ldrb r0, [r4, #ACTOR_T_IDENTITY]
         sub r0, r0, #1
         stmfd sp!, {r4}
         ldr r4, =balloons
         add r4, r4, r0, lsl #7 @ log2(BODY_LEN*MAX_BALLOONS)
-0:      tst r6, #1
+0:      tst r9, #1
         beq 1f
 
         ldrsh r0, [r4, #BODY_T_IMPULSE_Y]
@@ -572,22 +574,28 @@ update_balloonist_motion:
         @@ constrain to be within a given radius of the ballonist
         ldrsh r0, [r4, #BODY_T_X]
         ldrsh r1, [r4, #BODY_T_Y]
-        asr r0, r0, #PHYS_FIXED_POINT
-        sub r0, r0, r7, asr #PHYS_FIXED_POINT
-        asr r1, r1, #PHYS_FIXED_POINT
-        sub r1, r1, r8, asr #PHYS_FIXED_POINT
+        sub r0, r0, r7
+        sub r1, r1, r8
         mul r2, r0, r0
         mla r2, r1, r1, r2
+        asr r2, #PHYS_FIXED_POINT*2
 
-        subs r2, #BALLOON_DISTANCE*BALLOON_DISTANCE
-        blt 1f
-        @@ bring balloons closer
-        strh r7, [r4, #BODY_T_X]
-        strh r8, [r4, #BODY_T_Y]
-        @@ apply lift to balloonist
+        subs r3, r2, #BALLOON_DISTANCE*BALLOON_DISTANCE
+        ble 1f
+        @@ bring balloons closer and apply lift to balloonist
+
+        @@ r4 = body A
+        @@ r6 = body B
+        @@ r7 = distance squared (in pixels)
+        @@ r8 = penetration squared (in pixels)
+        stmfd sp!, {r0-r12}
+        mov r7, r2
+        mov r8, r3
+        bl resolve_contact
+        ldmfd sp!, {r0-r12}
 
 1:      add r4, r4, #BODY_LEN
-        lsrs r6, r6, #1
+        lsrs r9, r9, #1
         bne 0b
 
         ldmfd sp!, {r4}
@@ -857,18 +865,12 @@ update_body_motion:
 
         @@ r4 = body
         @@ r6 = other body
-        @@ LT if collision occurred, GE otherwise
+        @@ Returns:
+        @@   LT if collision occurred, GE otherwise
+        @@   r0 has distance squared
+        @@   r2 has distance expected squared
 check_body_collision:
         stmfd sp!, {lr}
-
-        @@ If the velocity signs are the same, skip the check
-        ldrsh r0, [r4, #BODY_T_VX]
-        ldrsh r2, [r6, #BODY_T_VX]
-        ldrsh r1, [r4, #BODY_T_VY]
-        ldrsh r3, [r6, #BODY_T_VY]
-        muls r0, r2, r0
-        mulgts r1, r3, r1
-        bgt 9f
 
         ldrsh r0, [r4, #BODY_T_X]
         asr r0, #PHYS_FIXED_POINT
@@ -896,6 +898,132 @@ check_body_collision:
 9:      ldmfd sp!, {pc}
 
 
+        @@ r4 = body A
+        @@ r6 = body B
+        @@ r7 = distance squared (in pixels)
+        @@ r8 = penetration squared (in pixels)
+resolve_contact:
+        stmfd sp!, {r7-r12,lr}
+        @@ XXX Ideally, we'd use the reciprocal square root here.
+        @@ There are great, simple algorithms for it.  But let's get the
+        @@ slow way working first.
+        mov r0, r7, lsl #PHYS_FIXED_POINT*2
+        swi #8<<16              @ sqrt
+        mov r7, r0
+        mov r0, r8, lsl #PHYS_FIXED_POINT*2
+        swi #8<<16              @ sqrt
+        mov r8, r0
+        @@ r7 = distance (12.4), r8 = penetration (12.4)
+
+        @@ compute normal as (p_B - p_A) * rsqrt(d^2)
+        @@ IOW n_x = (B_x - A_x) / d
+        ldrsh r0, [r4, #BODY_T_X] @ 12.4
+        ldrsh r1, [r6, #BODY_T_X]
+        sub r0, r0, r1
+        lsl r0, #4              @ 12.8
+        movs r1, r7             @ 12.4
+        moveq r1, #1
+        swi #6<<16              @ slow division
+        mov r9, r0              @ 12.4
+        ldrsh r0, [r4, #BODY_T_Y]
+        ldrsh r1, [r6, #BODY_T_Y]
+        sub r0, r0, r1
+        lsl r0, #4              @ 12.8
+        movs r1, r7             @ 12.8
+        moveq r1, #1
+        swi #6<<16 @ slow division
+        mov r10, r0             @ 12.4
+        @@ r9,r10 = contact normal x and y
+
+        @@ compute total inverse mass
+        ldrb r0, [r4, #BODY_T_MASS]
+        ldrb r1, [r6, #BODY_T_MASS]
+        add r11, r0, r1         @ 0.8
+
+        @@ r7 = distance
+        @@ r8 = penetration
+        @@ r9 = normal x
+        @@ r10 = normal y
+        @@ r11 = total inverse mass
+
+        @@ compute unit movement for resolving penetration
+        @@  u = (penetration / total_mass) * normal
+        mov r0, r8, lsl #8      @ 12.12
+        movs r1, r11            @ 0.8
+        moveq r1, #1
+        swi #6<<16
+        mov r2, r0              @ 12.4
+        @@ mul r2, r8, r11
+        mul r0, r2, r9          @ 12.4 * 12.4 = 12.8
+        asr r0, #4              @ 12.4
+        mul r1, r2, r10         @ 12.8
+        asr r1, #4              @ 12.4
+
+        @@ move bodies to resolve penetration
+        @@  p_A += u * m_A
+        ldrb r3, [r4, #BODY_T_MASS]
+        rsb r3, r3, #0          @ 0.8
+        mul r2, r0, r3          @ 12.4 * 0.8 = 12.12
+        ldrsh r12, [r4, #BODY_T_X]
+        add r2, r12, r2, asr #IMPULSE_SCALING @ 12.4
+        strh r2, [r4, #BODY_T_X]
+
+        mul r2, r1, r3          @ 12.12
+        ldrsh r12, [r4, #BODY_T_Y]
+        add r2, r12, r2, asr #IMPULSE_SCALING @ 12.4
+        strh r2, [r4, #BODY_T_Y]
+
+        @@  p_B += u * -m_B
+        ldrb r3, [r6, #BODY_T_MASS]
+        mul r2, r0, r3
+        ldrsh r12, [r6, #BODY_T_X]
+        add r2, r12, r2, asr #IMPULSE_SCALING
+        strh r2, [r6, #BODY_T_X]
+
+        mul r2, r1, r3
+        ldrsh r12, [r6, #BODY_T_Y]
+        add r2, r12, r2, asr #IMPULSE_SCALING
+        strh r2, [r6, #BODY_T_Y]
+
+        @@ compute unit movement for resolving collision
+        @@ separating_velocity = sum ((v_A - v_B) * normal)
+        ldrsh r0, [r4, #BODY_T_VX]
+        ldrsh r1, [r6, #BODY_T_VX]
+        sub r0, r0, r1
+        mul r0, r9, r0          @ 12.4 * 12.4 = 12.8
+        ldrsh r1, [r4, #BODY_T_VY]
+        ldrsh r2, [r6, #BODY_T_VY]
+        sub r1, r1, r2
+        mul r1, r10, r1         @ 12.8
+        adds r2, r0, r1         @ 12.8
+        bge 9f
+
+        @@  u = (separating_velocity / total_mass) * normal
+        mov r0, r2, lsl #4      @ 12.12
+        movs r1, r11            @ 0.8
+        moveq r1, #1
+        swi #6<<16              @ slow division
+        mul r1, r0, r9          @ 12.4 * 12.4 = 12.8
+        mul r2, r0, r10         @ 12.8
+
+        @@ apply impulse to resolve collision
+        ldrsh r3, [r4, #BODY_T_IMPULSE_X]
+        sub r3, r3, r1, asr #PHYS_FIXED_POINT
+        strh r3, [r4, #BODY_T_IMPULSE_X]
+        ldrsh r3, [r4, #BODY_T_IMPULSE_Y]
+        sub r3, r3, r2, asr #PHYS_FIXED_POINT
+        strh r3, [r4, #BODY_T_IMPULSE_Y]
+
+        ldrsh r3, [r6, #BODY_T_IMPULSE_X]
+        add r3, r3, r1, asr #PHYS_FIXED_POINT
+        strh r3, [r6, #BODY_T_IMPULSE_X]
+        ldrsh r3, [r6, #BODY_T_IMPULSE_Y]
+        add r3, r3, r2, asr #PHYS_FIXED_POINT
+        strh r3, [r6, #BODY_T_IMPULSE_Y]
+
+9:      ldmfd sp!, {r7-r12,pc}
+
+
         @@ r4 = balloonist
         @@ r6 = other balloonist
 check_balloonist_balloonist_collision:
@@ -905,13 +1033,19 @@ check_balloonist_balloonist_collision:
         mov r1, #FRAME_FLY
         bge .Lno_collision
 
+        @@ collision response
+        stmfd sp!, {r0-r12}
+        mov r7, r0
+        mov r8, r2
+
+        bl resolve_contact
+        ldmfd sp!, {r0-r12}
+
         @@ make bump noise
         mov r0, #3
         mov r1, #0
         mov r2, #0x540
         bl music_play_sfx
-
-        @@ collision response
 
         mov r1, #FRAME_BUMP
 .Lno_collision:

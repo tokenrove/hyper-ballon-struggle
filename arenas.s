@@ -26,7 +26,7 @@ arena_table:
         .align 2
 default:
         .byte 0b0101
-        .byte 4
+        .byte 50
         .hword 0
         .byte 42,100
         .byte 90,4
