@@ -30,7 +30,7 @@ victory.o: data/victory.map
 gameover.o: data/gameover.map
 select.o: data/selector.raw
 
-arenas.o: data/arena_default_mg.map data/arena_default_bg.map
+arenas.o: data/arena_default_mg.map data/arena_default_bg.map data/arena_vtube_mg.map data/arena_vtube_bg.map
 
 main: $(SRCOBJS) $(DATAOBJS)
 	$(LD) -T linkscript $^ -o $@

@@ -3,7 +3,7 @@
         .align 2
         .global arena_table
 arena_table:
-        .word default
+        .word default, vtube
         .word 0
 
 @@@ Arena structure:
@@ -46,3 +46,29 @@ default_background:
 0: .incbin "data/arena_default_bg.tiles"
 1:
 default_palette:        .incbin "data/arena_default_mg.pal"
+
+
+        .local vtube, vtube_midground, vtube_palette, vtube_background
+        .align 2
+vtube:
+        .byte 0b1001
+        .byte 50
+        .hword 0
+        .byte 42,100
+        .byte 90,4
+        .word vtube_palette
+        .word vtube_midground
+        .word vtube_background
+vtube_midground:
+        .byte 30, 20
+        .incbin "data/arena_vtube_mg.map"
+        .hword (1f - 0f)/32
+0: .incbin "data/arena_vtube_mg.tiles"
+1:
+vtube_background:
+        .byte 30, 20
+        .incbin "data/arena_vtube_bg.map"
+        .hword (1f - 0f)/32
+0: .incbin "data/arena_vtube_bg.tiles"
+1:
+vtube_palette:        .incbin "data/arena_vtube_mg.pal"

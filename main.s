@@ -44,19 +44,19 @@ metagame:
         ldrb r2, [r5], #1
         @@ select an arena
         ldrb r4, [r5], #1
+        stmfd sp!, {r0,r1}
         @@ call challenge
         bl challenge
         @@ call play_game(us, color, them, color, arena)
-        stmfd sp!, {r0,r1}
         bl play_game
         @@ we get back an outcome r0 -- lose or win
         mov r6, r0
-        ldmfd sp!, {r0,r1}
         cmp r6, #OUTCOME_LOSE
         beq game_over
 
         bl victory
 
+        ldmfd sp!, {r0,r1}
         @@ are there more opponents?
         ldr r6, =levels_end     @ &levels_len is also the end of levels
         cmp r5, r6
@@ -124,6 +124,11 @@ levels:
         .byte PALETTE_YELLOW
         .byte CHAR_RUDOLPH
         .byte ARENA_DEFAULT
+
+        .byte PALETTE_GREEN
+        .byte PALETTE_YELLOW
+        .byte CHAR_MONOCLE
+        .byte ARENA_VTUBE
 levels_end:
 
 @ EOF main.s

@@ -1,6 +1,7 @@
 @@@ -*- mode: asm; -*-
 
         .equ ARENA_DEFAULT, 0
+        .equ ARENA_VTUBE, 1
 
         .equ ARENA_T_FLAGS, 0
         .equ ARENA_T_GRAVITY, 1
