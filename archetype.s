@@ -63,9 +63,9 @@ archetype_table:
         .byte 0
         .byte PALETTE_GOTH, PALETTE_BLUE
         .byte PALETTE_BLUE, PALETTE_YELLOW
-        .word dude_fly, dude_bump, dude_die, dude_win
+        .word pierce_fly, pierce_bump, pierce_die, pierce_win
 
-        .asciz "Lana"
+        .asciz "Greedy"
         .balign 8
         .byte 40                @ strength
         .byte 50                @ stamina
@@ -73,7 +73,7 @@ archetype_table:
         .byte 0
         .byte PALETTE_PINK, PALETTE_BLUE
         .byte PALETTE_GREEN, PALETTE_BLUE
-        .word dudette_fly, dudette_bump, dudette_die, dudette_win
+        .word greedy_fly, greedy_bump, greedy_die, greedy_win
 
         .asciz "Myr"
         .balign 8
@@ -105,6 +105,7 @@ archetype_table:
         .byte PALETTE_PINK, PALETTE_RED
         .word monocle_fly, monocle_win, monocle_fly, monocle_win
 
+        @@ Moby died in the Spinning Room
         .ascii "Melville"
         .byte 0                 @ strength; zero so it also terminates his long name
         .byte 1                 @ stamina
@@ -112,7 +113,7 @@ archetype_table:
         .byte 0
         .byte PALETTE_RED, PALETTE_GOTH
         .byte PALETTE_BEARD, PALETTE_PINK
-        .word corpse_fly, corpse_bump, corpse_bump, corpse_bump
+        .word melville_fly, melville_bump, melville_die, melville_win
 archetype_table_len:    .hword .-archetype_table
 
 @@@ Tile data
@@ -151,19 +152,19 @@ octo_bump:    .incbin "data/octo_bump.raw"
 octo_die:     .incbin "data/octo_die.raw"
 octo_win:     .incbin "data/octo_win.raw"
 
-        .local dude_fly, dude_bump, dude_die, dude_win
+        .local pierce_fly, pierce_bump, pierce_die, pierce_win
         .align 2
-dude_fly:     .incbin "data/dude_fly.raw"
-dude_bump:    .incbin "data/dude_bump.raw"
-dude_die:     .incbin "data/dude_die.raw"
-dude_win:     .incbin "data/dude_win.raw"
+pierce_fly:     .incbin "data/pierce_fly.raw"
+pierce_bump:    .incbin "data/pierce_bump.raw"
+pierce_die:     .incbin "data/pierce_die.raw"
+pierce_win:     .incbin "data/pierce_win.raw"
 
-        .local dudette_fly, dudette_bump, dudette_die, dudette_win
+        .local greedy_fly, greedy_bump, greedy_die, greedy_win
         .align 2
-dudette_fly:     .incbin "data/dudette_fly.raw"
-dudette_bump:    .incbin "data/dudette_bump.raw"
-dudette_die:     .incbin "data/dudette_die.raw"
-dudette_win:     .incbin "data/dudette_win.raw"
+greedy_fly:     .incbin "data/greedy_fly.raw"
+greedy_bump:    .incbin "data/greedy_bump.raw"
+greedy_die:     .incbin "data/greedy_die.raw"
+greedy_win:     .incbin "data/greedy_win.raw"
 
         .local myr_fly, myr_bump, myr_die, myr_win
         .align 2
@@ -184,10 +185,12 @@ randy_win:     .incbin "data/randy_win.raw"
 monocle_fly:     .incbin "data/monocle_fly.raw"
 monocle_win:     .incbin "data/monocle_win.raw"
 
-        .local corpse_fly, corpse_bump
+        .local melville_fly, melville_bump, melville_die, melville_win
         .align 2
-corpse_fly:     .incbin "data/corpse_fly.raw"
-corpse_bump:    .incbin "data/corpse_bump.raw"
+melville_fly:     .incbin "data/melville_fly.raw"
+melville_bump:    .incbin "data/melville_bump.raw"
+melville_die:     .incbin "data/melville_die.raw"
+melville_win:     .incbin "data/melville_win.raw"
 
         .global invariant_palette
 invariant_palette:

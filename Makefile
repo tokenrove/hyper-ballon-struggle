@@ -24,7 +24,7 @@ DATAOBJS=archetype.o fontdat.o arenas.o instruments.o title-song.o in-game-song.
 %.map: %.pcx mortimer
 	./mortimer $<
 
-archetype.o: data/retsyn_fly.raw data/retsyn_bump.raw data/retsyn_die.raw data/retsyn_win.raw data/monk_fly.raw data/monk_bump.raw data/monk_die.raw data/monk_win.raw data/alien_fly.raw data/alien_bump.raw data/alien_die.raw data/alien_win.raw data/octo_fly.raw data/octo_bump.raw data/octo_die.raw data/octo_win.raw data/dude_fly.raw data/dude_bump.raw data/dude_die.raw data/dude_win.raw data/dudette_fly.raw data/dudette_bump.raw data/dudette_die.raw data/dudette_win.raw data/myr_fly.raw data/myr_bump.raw data/myr_die.raw data/myr_win.raw data/randy_fly.raw data/randy_bump.raw data/randy_die.raw data/randy_win.raw data/monocle_fly.raw data/monocle_win.raw data/corpse_fly.raw data/corpse_bump.raw data/ball2.raw data/ball2e.raw
+archetype.o: data/retsyn_fly.raw data/retsyn_bump.raw data/retsyn_die.raw data/retsyn_win.raw data/monk_fly.raw data/monk_bump.raw data/monk_die.raw data/monk_win.raw data/alien_fly.raw data/alien_bump.raw data/alien_die.raw data/alien_win.raw data/octo_fly.raw data/octo_bump.raw data/octo_die.raw data/octo_win.raw data/pierce_fly.raw data/pierce_bump.raw data/pierce_die.raw data/pierce_win.raw data/greedy_fly.raw data/greedy_bump.raw data/greedy_die.raw data/greedy_win.raw data/myr_fly.raw data/myr_bump.raw data/myr_die.raw data/myr_win.raw data/randy_fly.raw data/randy_bump.raw data/randy_die.raw data/randy_win.raw data/monocle_fly.raw data/monocle_win.raw data/melville_fly.raw data/melville_bump.raw data/melville_die.raw data/melville_win.raw data/ball2.raw data/ball2e.raw
 
 title.o: data/title.map
 victory.o: data/victory.map
