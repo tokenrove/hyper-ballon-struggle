@@ -80,6 +80,8 @@ init:
         orr r1, r1, #1<<7
         strh r1, [r0]
 
+        bl random_init
+
         @@ as a default; every screen sets its own mode
         bl gfx_set_mode_1
 

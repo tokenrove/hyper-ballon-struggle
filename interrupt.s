@@ -61,6 +61,7 @@ intr_handler:
         bleq 0f
         bl music_update
         bl input_update
+        bl random_word          @ keep the RNG moving
 0:      ldmfd sp!, {lr}
         bx lr
 
