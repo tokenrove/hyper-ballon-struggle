@@ -215,9 +215,9 @@ music_init:
         orr r1, r1, #0xFF00     @ Pan all to both
         strh r1, [r0, #0x80]    @ REG_SOUNDCNT_L
 
-        @ Enable wave channel XXX shouldn't play initial triangle
+        @ Enable wave channel
         ldr r0, =REG_GBCWAVCNT
-        mov r1, #0x80
+        mov r1, #0x0
         strh r1, [r0], #2
         mov r1, #0x2000
         orr r1, r1, #0xff
@@ -231,10 +231,14 @@ music_init:
         ldr r0, =REG_WAVE_RAM
         stmia r0!, {r4-r7}
         ldr r0, =REG_GBCWAVCNT
-        mov r1, #0xC0
+        mov r1, #0x40
         strh r1, [r0]
         ldr r0, =REG_WAVE_RAM
         stmia r0!, {r4-r7}
+
+        ldr r0, =REG_GBCWAVCNT
+        mov r1, #0x80
+        strh r1, [r0], #2
 
         @ Set amp resolution
         ldr r2, =REG_AMPRES
@@ -695,10 +699,18 @@ general_command:
 	cmp r6, r3
 	beq pattern_end_command
         mov r3, r6, lsr #11
-        cmp r3, #0x18
+        cmp r3, #0b11000
         beq loop_command
-	@ check other commands here
-	b 9f
+        cmp r3, #0b11010
+        beq tempo_command
+        b 9f
+
+tempo_command:
+        mov r3, #0xff
+        orr r3, r3, #0x700
+        and r0, r6, r3
+        bl set_tempo
+        b 9f
 
         @ Loop
 loop_command:
@@ -1187,7 +1199,7 @@ play_note_gbcwav:
         strh r5, [r4, #2]
         orr r5, r6, #0x8000     @ looping sound
         strh r5, [r4, #4]
-	@ Return
+        @ Return
 9:	ldmfd sp!, {r4-r6,pc}
 
 
@@ -1197,7 +1209,7 @@ play_note_gbcwav:
 play_silence_gbcwav:
 	@ Play the sound
         ldr r0, =REG_GBCWAVCNT
-        mov r1, #0x6000
+        mov r1, #0
         strh r1, [r0, #2]
 	@ Return
         mov pc, lr

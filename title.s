@@ -12,7 +12,7 @@ title_screen:
         stmfd sp!, {lr}
 
         bl gfx_wait_vblank
-        ldr r0, =song_crazy_quest_data
+        ldr r0, =title_song_data
         bl music_play_song
 
         mov r0, #REG_DISPCNT

@@ -1,0 +1,20 @@
+
+PH-1 test tune
+
+#HEADER
+
+replay "PH-1"
+title "Title theme"
+composer "tokenrove"
+
+#MUSIC
+
+ABC t180
+
+ABC [r1]4
+D o4 %i1
+D [<g4>g8g<g4>g4]4
+
+AB [[r1]4]4
+C o3 [r8b-b-rccrd | rddre-e-rf | rffrggra | rggrb-b-rg |]4
+D [[<g4>g8g<g4>g4]4]4

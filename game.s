@@ -81,6 +81,11 @@
 play_game:
         stmfd sp!, {r5-r12,lr}
 
+        stmfd sp!, {r0-r3}
+        ldr r0, =in_game_song_data
+        bl music_play_song
+        ldmfd sp!, {r0-r3}
+
         @@ set things up based on arguments passed in
         ldr r5, =arena_table
         ldr r5, [r5, r4, lsl #2]

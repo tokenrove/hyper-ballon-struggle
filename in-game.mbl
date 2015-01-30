@@ -1,0 +1,25 @@
+
+PH-1 test tune.  Not to be confused with actual music.
+
+#HEADER
+
+replay "PH-1"
+title "In-game"
+composer "tokenrove"
+
+#MUSIC
+
+ABC t220
+
+ABC [r1]2
+D %i2 o3 [>d8<d>c-<db-dad]2
+
+AB o2 q2
+A [d8 d4 r8 a8 a4 r8 | a-2 g2 |]2
+B [a8 a4 r8 >e8 e4 r8 | e-2 d2< |]2
+C [r1]2
+D %i2 o2 [>d8<d>c-<db-dad]4
+
+AB [r1]2
+C [[r1]4]4
+D o3 [[<g4>g8g<g4>g4]4]4

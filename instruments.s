@@ -1,12 +1,17 @@
 
+        .global instrument_bank_0
+instrument_bank_0:
+        .word instr_standard_sqr0, instr_standard_sqr1
+        .word instr_standard_noise, instr_standard_samples
+
 	@ Instrument banks
 	.global instr_standard_sqr0
 instr_standard_sqr0:
-.word 0x35000008,0xff3f005f
+.word 0x8f8f0000,0xff3f005f
 
 	.global instr_standard_sqr1
 instr_standard_sqr1:
-.short 0xf040, 0xdfbf, 0xd500, 0xf140
+.short 0x8fbf, 0xf040, 0xd500, 0xf140
 .align
 
         .global instr_standard_noise
@@ -52,8 +57,24 @@ instr_standard_samples:
 .hword 11025
 .word inst_pop
 
+.hword inst_marimba_len
+.hword 11025
+.word inst_marimba
+
+.hword inst_pizz_len
+.hword 11025
+.word inst_pizz
+
 inst_pop: .incbin "samples/pop.sb"
         .align
         .equ inst_pop_len, .-inst_pop
+
+inst_pizz: .incbin "samples/pizzicato.sb"
+        .align
+        .equ inst_pizz_len, .-inst_pizz
+
+inst_marimba: .incbin "samples/marimba.sb"
+        .align
+        .equ inst_marimba_len, .-inst_marimba
 
 @ EOF instruments.s
