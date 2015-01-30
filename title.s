@@ -26,9 +26,10 @@ title_screen:
         bl copy_tilemap_to_vram_bg
 
         ldr r0, =title_pal
-        bl gfx_load_bg_palette
+        bl gfx_fade_to
 
         bl wait_for_start_toggled
+        bl gfx_fade_to_black
         bl music_stop_song
 
         ldmfd sp!, {pc}

@@ -95,18 +95,17 @@ gfx_set_spr_palette:
 @ EOR gfx_set_spr_palette
 
 
-@
-@ gfx_fade_to(palette) 
-@
-@ Fades in a palette in 1/60th steps.
-@
-	.global gfx_fade_to
+        @@ Fades in a BG palette in 1/60th steps.
+        @@ Note that we don't fade the sprite palette.
+        .global gfx_fade_to
 gfx_fade_to:
 	stmfd sp!,{r4-r10,lr}
 	mov r4, #palram_base	    @ Beginning
-	add r6, r4, #0x100	    @ and End of transfer
+        add r6, r4, #0x200	    @ and End of transfer
 1:	@ Wait vblank
 	bl gfx_wait_vblank
+        ldr r2, =debounce
+        ldrh r3, [r2]
 	@ For each element in the palette, step it toward the desired one
 	stmfd sp!,{r0,r4,r6}
 	mov r5, #0		    @ If r5 is never changed, we're done.
@@ -144,16 +143,81 @@ gfx_fade_to:
 	addlt r7, r7, #1
 	subgt r7, r7, #1
 
+        @@ if start is pressed, set the palette immediately
+        tst r3, #0b1000		@ start button
+        moveq r7, r8
+
 	strh r7, [r4, #-2]
 3:	cmp r4, r6
 	bne 2b
 	@ If we're not done, repeat.
 	ldmfd sp!,{r0,r4,r6}
-	cmp r5, #0
+        cmp r5, #0
 	bne 1b
-	ldmfd sp!,{r4-r10,lr}
-	bx lr
+        ldmfd sp!,{r4-r10,pc}
 @ EOR gfx_fade_to
+
+
+        @@ Fade to black in 1/60th steps.
+        @@ Note that we fade the sprite palette as well.
+        .global gfx_fade_to_black
+gfx_fade_to_black:
+        stmfd sp!,{r4-r10,lr}
+        mov r4, #palram_base	    @ Beginning
+        add r6, r4, #0x400	    @ and End of transfer
+        mov r8, #0
+1:	@ Wait vblank
+        bl gfx_wait_vblank
+        ldr r2, =debounce
+        ldrh r3, [r2]
+        @ For each element in the palette, step it toward the desired one
+        stmfd sp!,{r4,r6}
+        mov r5, #0		    @ If r5 is never changed, we're done.
+2:	ldrh r7, [r4], #2	    @ current
+        cmp r7, r8
+        beq 3f
+        mov r5, #1		    @ They're not equal, we're not done.
+        @ Seperate into components
+        @ Blue
+        mov r9, r7, lsr #10
+        cmp r9, r8, lsr #10
+        addlt r9, r9, #1
+        subgt r9, r9, #1
+        bicne r7, r7, #0xfc00
+        orrne r7, r7, r9, lsl #10
+
+        @ Green
+        mov r9, r7, lsr #5
+        and r9, r9, #31
+        mov r10, r8, lsr #5
+        and r10, r10, #31
+        cmp r9, r10
+        addlt r9, r9, #1
+        subgt r9, r9, #1
+        bicne r7, r7, #0x03E0
+        orrne r7, r7, r9, lsl #5
+
+        @ Red
+        mov r9, r7
+        and r9, r9, #0x1f
+        mov r10, r8
+        and r10, r10, #0x1f
+        cmp r9, r10
+        addlt r7, r7, #1
+        subgt r7, r7, #1
+
+        @@ if start is pressed, set the palette immediately
+        tst r3, #0b1000		@ start button
+        moveq r7, r8
+
+        strh r7, [r4, #-2]
+3:	cmp r4, r6
+        bne 2b
+        @ If we're not done, repeat.
+        ldmfd sp!,{r4,r6}
+        cmp r5, #0
+        bne 1b
+1:      ldmfd sp!,{r4-r10,pc}
 
 
 @ gfx_disable_sprites

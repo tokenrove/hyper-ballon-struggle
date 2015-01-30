@@ -44,7 +44,7 @@ metagame:
         ldrb r2, [r5], #1
         @@ select an arena
         ldrb r4, [r5], #1
-        stmfd sp!, {r0,r1}
+        stmfd sp!, {r0,r1,r5}
         @@ call challenge
         bl challenge
         @@ call play_game(us, color, them, color, arena)
@@ -56,7 +56,7 @@ metagame:
 
         bl victory
 
-        ldmfd sp!, {r0,r1}
+        ldmfd sp!, {r0,r1,r5}
         @@ are there more opponents?
         ldr r6, =levels_end     @ &levels_len is also the end of levels
         cmp r5, r6
@@ -86,14 +86,6 @@ init:
         @@ Setup fonts
         bl font_load
 
-        @@ Set a blue background of doom; if we see this, we died
-        @@ somewhere before hitting the title screen.
-        mov r0, #palram_base
-        mov r1, #0x005e
-        strh r1, [r0]
-        mov r1, #0x7e00
-        strh r1, [r0], #2
-
         @@ Setup interrupts and start playing music
         bl music_init
         bl intr_init
@@ -101,6 +93,11 @@ init:
         ldr r4, =instrument_bank_0
         ldmia r4!, {r0-r3}
         bl music_set_instruments
+
+        @@ black to begin
+        mov r0, #palram_base
+        mov r1, #0
+        str r1, [r0]
 
         @@ unblank the display
         ldr r0, =REG_DISPCNT
