@@ -15,8 +15,8 @@
         @@ Terminal velocity
         .equ TERMINAL_VELOCITY, 16
         @@ Collision radii squared
-        .equ COLLIDE_TYPE_0_RADIUS, 50
-        .equ COLLIDE_TYPE_1_RADIUS, 220
+        .equ COLLIDE_TYPE_0_RADIUS, 30
+        .equ COLLIDE_TYPE_1_RADIUS, 150
 
         .equ BALLOON_TILE, 0
         .equ BALLOON_POP_TILE, 1

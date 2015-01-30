@@ -20,7 +20,7 @@ archetype_table:
         .balign 8
         .byte 40                @ strength
         .byte 50                @ stamina
-        .byte 80                @ mass
+        .byte 85                @ mass
         .byte 0
         .byte PALETTE_BLUE, PALETTE_GREEN
         .byte PALETTE_GOTH, PALETTE_BEARD
@@ -37,9 +37,9 @@ archetype_table:
 
         .asciz "Ralph"
         .balign 8
-        .byte 1                 @ strength
-        .byte 1                 @ stamina
-        .byte 10                @ mass
+        .byte 40                @ strength
+        .byte 50                @ stamina
+        .byte 100               @ mass
         .byte 0
         .byte PALETTE_BLUE, PALETTE_GREEN
         .byte PALETTE_RED, PALETTE_PURPLE
@@ -47,9 +47,9 @@ archetype_table:
 
         .asciz "Lopez"
         .balign 8
-        .byte 1                 @ strength
-        .byte 1                 @ stamina
-        .byte 10                @ mass
+        .byte 80                @ strength
+        .byte 40                @ stamina
+        .byte 140               @ mass
         .byte 0
         .byte PALETTE_GREEN, PALETTE_CYAN
         .byte PALETTE_BLUE, PALETTE_GREEN
@@ -57,9 +57,9 @@ archetype_table:
 
         .asciz "Pierce"
         .balign 8
-        .byte 1                 @ strength
-        .byte 1                 @ stamina
-        .byte 10                @ mass
+        .byte 35                @ strength
+        .byte 60                @ stamina
+        .byte 100               @ mass
         .byte 0
         .byte PALETTE_GOTH, PALETTE_BLUE
         .byte PALETTE_BLUE, PALETTE_YELLOW
@@ -67,9 +67,9 @@ archetype_table:
 
         .asciz "Lana"
         .balign 8
-        .byte 1                 @ strength
-        .byte 1                 @ stamina
-        .byte 10                @ mass
+        .byte 40                @ strength
+        .byte 50                @ stamina
+        .byte 60                @ mass
         .byte 0
         .byte PALETTE_PINK, PALETTE_BLUE
         .byte PALETTE_GREEN, PALETTE_BLUE
@@ -77,9 +77,9 @@ archetype_table:
 
         .asciz "Myr"
         .balign 8
-        .byte 1                 @ strength
-        .byte 1                 @ stamina
-        .byte 10                @ mass
+        .byte 40                @ strength
+        .byte 50                @ stamina
+        .byte 70                @ mass
         .byte 0
         .byte PALETTE_YELLOW, PALETTE_BLUE
         .byte PALETTE_PINK, PALETTE_RED
@@ -87,9 +87,9 @@ archetype_table:
 
         .asciz "Randy"
         .balign 8
-        .byte 1                 @ strength
-        .byte 1                 @ stamina
-        .byte 10                @ mass
+        .byte 50                @ strength
+        .byte 50                @ stamina
+        .byte 110               @ mass
         .byte 0
         .byte PALETTE_BEARD, PALETTE_GREEN
         .byte PALETTE_YELLOW, PALETTE_PINK
@@ -97,9 +97,9 @@ archetype_table:
 
         .asciz "Mono"
         .balign 8
-        .byte 1                 @ strength
-        .byte 1                 @ stamina
-        .byte 10                @ mass
+        .byte 90                @ strength
+        .byte 40                @ stamina
+        .byte 190               @ mass
         .byte 0
         .byte PALETTE_PURPLE, PALETTE_PINK
         .byte PALETTE_PINK, PALETTE_RED
@@ -108,7 +108,7 @@ archetype_table:
         .ascii "Melville"
         .byte 0                 @ strength; zero so it also terminates his long name
         .byte 1                 @ stamina
-        .byte 10                @ mass
+        .byte 100               @ mass
         .byte 0
         .byte PALETTE_RED, PALETTE_GOTH
         .byte PALETTE_BEARD, PALETTE_PINK
