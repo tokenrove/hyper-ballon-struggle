@@ -1,0 +1,21 @@
+
+PH-1 test tune
+
+#HEADER
+
+replay "PH-1"
+title "test"
+composer "tokenrove"
+
+#MUSIC
+
+ABCDEF t120
+
+A o4
+A d8<a >c<g t110 b-f t100 ae | t90 d1 |
+B o1
+C o1
+BC q8 d2 t110 d4 t100 d4 | t90 <d1 |
+DEF r2 t110 r4 t100 r4 | t90 r1 |
+
+ABCDEF r1

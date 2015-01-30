@@ -6,6 +6,8 @@
 display_gameover:
         stmfd sp!, {lr}
 
+        ldr r0, =game_over_song_data
+        bl music_play_song
         bl gfx_wait_vblank
 
         mov r0, #REG_DISPCNT
