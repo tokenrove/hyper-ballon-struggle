@@ -33,8 +33,8 @@
         .equ MAX_BALLOONS,8
 
         .equ BALLOON_MASS, 0xff
-        .equ BALLOON_LIFT, -10
-        .equ BALLOON_DISTANCE, 30
+        .equ BALLOON_LIFT, -7
+        .equ BALLOON_DISTANCE, 15
 
         .equ BLINK_TIME, 60
 
@@ -656,6 +656,7 @@ update_balloonist_motion:
         stmfd sp!, {r0-r12}
         mov r7, r2
         mov r8, r3
+        bl compute_contact_normal_opp
         bl resolve_contact
         ldmfd sp!, {r0-r12}
 
@@ -1022,12 +1023,17 @@ apply_arena_wrapping:
 
 9:      ldmfd sp!, {r6,r9,r10,pc}
 
-        @@ r4 = body A
-        @@ r6 = body B
-        @@ r7 = distance squared (in pixels)
-        @@ r8 = penetration squared (in pixels)
-resolve_contact:
-        stmfd sp!, {r7-r12,lr}
+
+compute_contact_normal_opp:
+        stmfd sp!, {lr}
+        bl compute_contact_normal
+        rsb r9, r9, #0
+        rsb r10, r10, #0
+        ldmfd sp!, {pc}
+
+
+compute_contact_normal:
+        stmfd sp!, {lr}
         @@ XXX Ideally, we'd use the reciprocal square root here.
         @@ There are great, simple algorithms for it.  But let's get the
         @@ slow way working first.
@@ -1041,16 +1047,16 @@ resolve_contact:
 
         @@ compute normal as (p_B - p_A) * rsqrt(d^2)
         @@ IOW n_x = (B_x - A_x) / d
-        ldrsh r0, [r4, #BODY_T_X] @ 12.4
-        ldrsh r1, [r6, #BODY_T_X]
+        ldrsh r0, [r6, #BODY_T_X] @ 12.4
+        ldrsh r1, [r4, #BODY_T_X]
         sub r0, r0, r1
         lsl r0, #4              @ 12.8
         movs r1, r7             @ 12.4
         moveq r1, #1
         swi #6<<16              @ slow division
         mov r9, r0              @ 12.4
-        ldrsh r0, [r4, #BODY_T_Y]
-        ldrsh r1, [r6, #BODY_T_Y]
+        ldrsh r0, [r6, #BODY_T_Y]
+        ldrsh r1, [r4, #BODY_T_Y]
         sub r0, r0, r1
         lsl r0, #4              @ 12.8
         movs r1, r7             @ 12.8
@@ -1058,7 +1064,14 @@ resolve_contact:
         swi #6<<16 @ slow division
         mov r10, r0             @ 12.4
         @@ r9,r10 = contact normal x and y
+        ldmfd sp!, {pc}
 
+        @@ r4 = body A
+        @@ r6 = body B
+        @@ r7 = distance squared (in pixels)
+        @@ r8 = penetration squared (in pixels)
+resolve_contact:
+        stmfd sp!, {r7-r12,lr}
         @@ compute total inverse mass
         ldrb r0, [r4, #BODY_T_MASS]
         ldrb r1, [r6, #BODY_T_MASS]
@@ -1162,6 +1175,7 @@ check_balloonist_balloonist_collision:
         mov r7, r0
         mov r8, r2
 
+        bl compute_contact_normal
         bl resolve_contact
         ldmfd sp!, {r0-r12}
 
@@ -1225,6 +1239,7 @@ check_balloon_collisions:
         stmfd sp!, {r0-r12}
         mov r7, r0
         mov r8, r2
+        bl compute_contact_normal
         bl resolve_contact
         ldmfd sp!, {r0-r12}
         b 2b
