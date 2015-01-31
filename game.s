@@ -41,6 +41,8 @@
         .equ EXERTION_MAX_SHIFT, 2
         .equ COST_PER_FLAP, 16
 
+        .equ HORIZONTAL_TRAVEL, 2
+
         .equ BODY_T_X, 0
         .equ BODY_T_Y, 2
         .equ BODY_T_VX, 4
@@ -634,8 +636,8 @@ flap:
 
         tst r0, #0b01
         ldrsh r3, [r4, #BODY_T_IMPULSE_X]
-        addne r3, r3, #2<<(IMPULSE_SCALING-2)
-        subeq r3, r3, #2<<(IMPULSE_SCALING-2)
+        addne r3, r3, #HORIZONTAL_TRAVEL<<(IMPULSE_SCALING-2)
+        subeq r3, r3, #HORIZONTAL_TRAVEL<<(IMPULSE_SCALING-2)
         strh r3, [r4, #BODY_T_IMPULSE_X]
 
 0:
@@ -651,7 +653,7 @@ enemy_action:
         ldr pc, [r1, r0, lsl #2]
 
 initial_state:
-        mov r0, #ST_MAINTAIN_EQUILIBRIUM
+        mov r0, #ST_APPROACH_PLAYER
         strb r0, [r4, #ACTOR_T_STATE]
         bx lr
 
@@ -664,14 +666,60 @@ approach_player:
         bne 0f
         ldrsh r2, [r4, #BODY_T_X]
         ldrsh r3, [r6, #BODY_T_X]
-        cmp r2, r3
+        asr r2, #2
+        subs r7, r2, r3, asr #2
         movlt r0, #0b01
         movgt r0, #0b10
         moveq r0, #0
         bl flap
-        mov r0, #37
+        bl calculate_flap_equilibrium
+        mov r9, r0
+        ldrsh r2, [r4, #BODY_T_Y]
+        ldrsh r3, [r6, #BODY_T_Y]
+        subs r8, r2, r3
+        @@ XXX everything here is basically bullshit, since we
+        @@ actually need to find solutions to the differential equations
+        @@ that describe the motion of this object to do this properly.
+
+        @@ r7 = delta x (12.4), r8 = delta y (12.4), r9 = flap equilibrium
+        @@ n = dx / htravel
+        rsb r0, r7, #0
+        mov r1, #HORIZONTAL_TRAVEL+3 @ XXX needs fudging
+        swi #6<<16              @ slow division
+        movs r7, r0, asr #4
+        rsbmi r7, r7, #0       @ abs
+        @@ r7 = n, number of flaps to travel dx
+        bl calculate_gravity_plus_lift
+        movs r1, r0
+        moveq r1, #1
+        mov r0, r8
+        swi #6<<16
+        @@ r0 = dy / (gravity+lift)
+        @@ this is the number of frames in total we'd need to add/drop to travel dy
+        movs r1, r7
+        moveq r1, #1
+        swi #6<<16
+        @@ r0 = r0 / n
+        @@ this is the number of extra frames on this flap, if we
+        @@ expect to make n flaps in total
+
+        @@ we add this value to the flap equilibrium to figure out our
+        @@ timing.  really, we should be incorporating our character's
+        @@ stamina, though.
+
+        @@ well, we would, except that's bullshit; we take some of
+        @@ that information and drastically modify our flap rate based on
+        @@ it.
+        @@ adds r0, r0, r9
+        @@ movmi r0, r9
+        asr r0, #2
+        cmp r0, #0
+        lsrpl r0, r9, #1
+        lslmi r0, r9, #1
+        and r0, r0, #0xff
 0:      strb r0, [r4, #ACTOR_T_FLAP_CTR]
         ldmfd sp!, {pc}
+
 
         @@ wish we had vcnt
         @@ this is per Hacker's Delight
@@ -693,6 +741,7 @@ popcnt:
         and r0, r0, #0x3f
         mov pc, lr
 
+
 maintain_equilibrium:
         stmfd sp!, {lr}
         @@ XXX needs to become a separate state variable
@@ -702,15 +751,34 @@ maintain_equilibrium:
         bne 0f
         mov r0, #0
         bl flap
-        @@ flap count to maintain this altitude:
-        @@ (strength<<4) / (gravity + lift) * cost
+        bl calculate_flap_equilibrium
+0:      strb r0, [r4, #ACTOR_T_FLAP_CTR]
+        ldmfd sp!, {pc}
 
+
+        @@ r4 = balloonist
+        @@ r5 = arena
+        @@ XXX It occurs to me, suddenly, that if the game loop were
+        @@ structured in a specific order, we would have already
+        @@ calculated this value and applied it as the only impulses on
+        @@ the actor.  So instead of recomputing it all the time, we
+        @@ could just use ACTOR_T_IMPULSE_Y.  Maybe later.
+calculate_gravity_plus_lift:
+        stmfd sp!, {lr}
         ldrb r0, [r4, #ACTOR_T_BALLOONS]
         bl popcnt
         mov r1, #BALLOON_LIFT
         ldrb r2, [r5, #ARENA_T_GRAVITY]
         mla r0, r1, r0, r2
-        @@ r1 = number of balloons * lift + gravity
+        @@ r0 = number of balloons * lift + gravity
+        ldmfd sp!, {pc}
+
+
+        @@ flap count to maintain current altitude:
+        @@ (strength<<4) / (gravity + lift) * cost
+calculate_flap_equilibrium:
+        stmfd sp!, {lr}
+        bl calculate_gravity_plus_lift
         mov r1, #COST_PER_FLAP
         mul r1, r0, r1
         ldr r0, [r4, #ACTOR_T_ARCHETYPE_PTR]
@@ -718,10 +786,6 @@ maintain_equilibrium:
         lsl r0, #12
         swi #6<<16              @ slow division
         asr r0, #4
-        stmfd sp!, {r0-r3}
-        bl print_debug_word
-        ldmfd sp!, {r0-r3}
-0:      strb r0, [r4, #ACTOR_T_FLAP_CTR]
         ldmfd sp!, {pc}
 
         .align 2
