@@ -122,6 +122,7 @@ archetype_table_len:    .hword .-archetype_table
         .global balloon_sprites, balloon_sprites_end
 balloon_sprites: .incbin "data/ball2.raw"
         .incbin "data/ball2e.raw"
+        .incbin "data/sweatdrop.raw"
 balloon_sprites_end:
 
         .local retsyn_fly, retsyn_bump, retsyn_die, retsyn_win

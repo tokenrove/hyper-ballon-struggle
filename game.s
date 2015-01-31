@@ -37,6 +37,8 @@
         .equ BALLOON_DISTANCE, 15
 
         .equ BLINK_TIME, 60
+        .equ EXERTION_BASE_SHIFT, 1
+        .equ EXERTION_MAX_SHIFT, 2
 
         .equ BODY_T_X, 0
         .equ BODY_T_Y, 2
@@ -120,10 +122,16 @@ play_game:
         @@ If we're in demo mode, we'd want to call an alternate
         @@ routine for the player.
         ldr r4, =balloonists
+        add r6, r4, #BALLOONIST_LEN
+        bl update_exertion
         bl apply_gravity
         bl human_input
         bl process_invulnerability
-        add r4, r4, #BALLOONIST_LEN
+
+        mov r0, r4
+        mov r4, r6
+        mov r6, r0
+        bl update_exertion
         bl apply_gravity
         bl enemy_action
         bl process_invulnerability
@@ -478,7 +486,7 @@ render_balloonist:
 .Ldone:
         ldrb r1, [r4, #ACTOR_T_INVULNERABILITY]
         tst r1, #0b1
-        bne 9f
+        bne 8f
 
         ldrsh r1, [r4, #BODY_T_Y]  @ y coordinate
         asr r1, r1, #PHYS_FIXED_POINT
@@ -507,6 +515,31 @@ render_balloonist:
         strh r2, [r0], #2
 
         @ rotation bits
+        mov r1, #0
+        strh r1, [r0], #2
+
+8:      @@ drop sweatdrop if overexerted
+        ldrh r1, [r4, #ACTOR_T_EXERTION]
+        ldr r2, [r4, #ACTOR_T_ARCHETYPE_PTR]
+        ldrb r2, [r2, #ARCHETYPE_T_STAMINA]
+        lsl r2, #EXERTION_BASE_SHIFT
+        cmp r1, r2
+        blt 9f
+
+        ldrsh r1, [r4, #BODY_T_Y]
+        asr r1, #PHYS_FIXED_POINT
+        sub r1, r1, #8
+        and r1, r1, #0xff
+        orr r1, r1, #0x400
+        strh r1, [r0], #2
+
+        ldrsh r1, [r4, #BODY_T_X]
+        asr r1, #PHYS_FIXED_POINT
+        and r1, r1, #0xff
+        strh r1, [r0], #2
+
+        mov r2, #2
+        strh r2, [r0], #2
         mov r1, #0
         strh r1, [r0], #2
 
@@ -552,36 +585,55 @@ human_input:
         @@ B button (flap)
         tst r2, #0b10           @ B button
         bne .Lnot_flapping
-        @@ XXX maybe give us a little extra impulse on the frame after debounce?
-        ldrsh r3, [r4, #BODY_T_IMPULSE_Y]
-        ldr r0, [r4, #ACTOR_T_ARCHETYPE_PTR]
-        @@ ldrb r0, [r0, #ARCHETYPE_T_STRENGTH]
-        sub r3, r3, #2<<(IMPULSE_SCALING-2)
-        @@ XXX this is where the flap abstraction needs to happen
-        strh r3, [r4, #BODY_T_IMPULSE_Y]
-
-1:	tst r1, #0b00010000 @ right
-        bne 0f
-        ldrb r3, [r4, #ACTOR_T_FRAME]
-        bic r3, r3, #1          @ face right
-        strb r3, [r4, #ACTOR_T_FRAME]
-        ldrsh r3, [r4, #BODY_T_IMPULSE_X]
-        add r3, r3, #2<<(IMPULSE_SCALING-2)
-        strh r3, [r4, #BODY_T_IMPULSE_X]
-        b 9f
-
-0:	tst r1, #0b00100000 @ left
-        bne 9f
-        ldrb r3, [r4, #ACTOR_T_FRAME]
-        orr r3, r3, #1          @ face left
-        strb r3, [r4, #ACTOR_T_FRAME]
-        ldrsh r3, [r4, #BODY_T_IMPULSE_X]
-        sub r3, r3, #2<<(IMPULSE_SCALING-2)
-        strh r3, [r4, #BODY_T_IMPULSE_X]
+        @@ bottom two bits are right and left, which is our direction
+        mvn r0, r1, lsr #4
+        bl flap
 
 .Lnot_flapping:
 9:
         ldmfd sp!, {pc}
+
+
+        @@ r0 = direction (lowest bits: LR)
+        @@ r4 = actor
+        @@ XXX maybe give us a little extra impulse on the frame after debounce?
+flap:
+        tst r0, #0b11
+        beq 1f
+
+        tst r0, #0b01
+        ldrb r3, [r4, #ACTOR_T_FRAME]
+        bicne r3, r3, #1        @ face right
+        orreq r3, r3, #1        @ face left
+        strb r3, [r4, #ACTOR_T_FRAME]
+
+1:      ldr r3, [r4, #ACTOR_T_ARCHETYPE_PTR]
+        ldrh r1, [r4, #ACTOR_T_EXERTION]
+        ldrb r2, [r3, #ARCHETYPE_T_STAMINA]
+        lsl r2, #EXERTION_BASE_SHIFT
+        cmp r1, r2
+        bgt 0f
+        add r1, r1, #20
+        cmp r1, r2
+        addge r1, r1, r2
+        strh r1, [r4, #ACTOR_T_EXERTION]
+
+        ldrb r2, [r3, #ARCHETYPE_T_STRENGTH]
+        ldrsh r1, [r4, #BODY_T_IMPULSE_Y]
+        sub r1, r1, r2, lsl #4
+        strh r1, [r4, #BODY_T_IMPULSE_Y]
+
+        tst r0, #0b11
+        beq 0f
+
+        tst r0, #0b01
+        ldrsh r3, [r4, #BODY_T_IMPULSE_X]
+        addne r3, r3, #2<<(IMPULSE_SCALING-2)
+        subeq r3, r3, #2<<(IMPULSE_SCALING-2)
+        strh r3, [r4, #BODY_T_IMPULSE_X]
+
+0:
+        bx lr
 
 
         @@ r4 = us
@@ -592,11 +644,28 @@ enemy_action:
         subs r0, r0, #1
         movne r3, #0
         bne 0f
+        ldrsh r2, [r4, #BODY_T_X]
+        ldrsh r3, [r6, #BODY_T_X]
+        cmp r2, r3
+        movlt r0, #0b01
+        movgt r0, #0b10
+        moveq r0, #0
+        bl flap
         mov r0, #20
-        mov r3, #-16
-        strh r3, [r4, #BODY_T_IMPULSE_Y]  @ y acceleration
 0:      strb r0, [r4, #ACTOR_T_FRAME_DELAY]
         ldmfd sp!, {pc}
+
+
+update_exertion:
+        ldrh r1, [r4, #ACTOR_T_EXERTION]
+        ldr r2, [r4, #ACTOR_T_ARCHETYPE_PTR]
+        ldrb r2, [r2, #ARCHETYPE_T_STAMINA]
+        lsl r2, #EXERTION_BASE_SHIFT
+        cmp r1, r2
+        moveq r1, #1
+        subs r1, r1, #1
+        strgeh r1, [r4, #ACTOR_T_EXERTION]
+        mov pc, lr
 
 
         @@ r4 = balloonist
