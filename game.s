@@ -35,6 +35,7 @@
         .equ BALLOON_MASS, 0xff
         .equ BALLOON_LIFT, -5
         .equ BALLOON_DISTANCE, 12
+        .equ BALLOON_POP_TIMING, 20
 
         .equ BLINK_TIME, 60
         .equ EXERTION_BASE_SHIFT, 1
@@ -78,6 +79,8 @@
 
         .align 2
         .lcomm arena, 4
+
+        .lcomm popped_balloon, 8
 
         .section .text
         .arm
@@ -186,6 +189,7 @@ play_game:
         add r4, r4, #BALLOONIST_LEN
         bl render_balloonist
 
+        bl render_popped_balloon
         bl disable_remaining_sprites
 
         @@ loop forever
@@ -224,6 +228,7 @@ play_game:
         add r4, r4, #BALLOONIST_LEN
         bl render_balloonist
 
+        bl render_popped_balloon
         bl disable_remaining_sprites
 
         ldmfd sp!, {r5}
@@ -327,6 +332,11 @@ setup_balloons:
         ldr r0, =balloons
         mov r1, #BODY_LEN*MAX_BALLOONS*N_BALLOONISTS
         bl dma_zero32
+
+        ldr r0, =popped_balloon
+        mov r1, #0
+        str r1, [r0], #4
+        str r1, [r0], #4
 
         ldmfd sp!, {pc}
 
@@ -443,6 +453,41 @@ setup_balloonist:
 1:
 
         ldmfd sp!, {pc}
+
+
+        @@ r0 = OAM pointer
+render_popped_balloon:
+        stmfd sp!, {lr}
+
+        ldr r2, =popped_balloon
+        ldrb r1, [r2, #5]       @ count
+        subs r1, r1, #1
+        bmi 9f
+        strb r1, [r2, #5]
+
+        ldrsh r1, [r2, #2]
+        asr r1, r1, #PHYS_FIXED_POINT
+        sub r1, r1, #4
+        and r1, r1, #255
+        orr r1, r1, #0x400
+        strh r1, [r0], #2
+
+        ldrsh r1, [r2, #0]
+        asr r1, r1, #PHYS_FIXED_POINT
+        sub r1, r1, #4
+        mov r3, #512
+        sub r3, r3, #1
+        and r1, r1, r3
+        strh r1, [r0], #2
+
+        mov r1, #BALLOON_POP_TILE @ tile idx
+        ldrb r3, [r2, #4]       @ color
+        orr r1, r1, r3, lsl #12
+        strh r1, [r0], #2
+
+        mov r1, #0              @ rotation bits
+        strh r1, [r0], #2
+9:      ldmfd sp!, {pc}
 
 
         @@ render actor and balloons to oam
@@ -1468,7 +1513,18 @@ check_balloon_collisions:
         @@ a balloon got popped; we don't care about the other
         @@ balloons right now.
 .Ldo_damage:
-        @@ XXX should set popping counter for balloon
+        @@ XXX should set popping counter for balloon, but we have
+        @@ entered the land of grotesque hacks now.
+        ldr r0, =popped_balloon
+        ldrsh r1, [r4, #BODY_T_X]
+        strh r1, [r0]
+        ldrsh r1, [r4, #BODY_T_Y]
+        strh r1, [r0, #2]
+        ldrb r1, [r7, #ACTOR_T_IDENTITY]
+        strb r1, [r0, #4]
+        mov r1, #BALLOON_POP_TIMING
+        strb r1, [r0, #5]
+
         ldr r0, =balloons
         sub r0, r4, r0
         lsr r0, r0, #4                   @ log2(BODY_LEN)
