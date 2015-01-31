@@ -1520,6 +1520,19 @@ check_balloon_collisions:
         @@ a balloon got popped; we don't care about the other
         @@ balloons right now.
 .Ldo_damage:
+        @@ Belmont the popper
+        stmfd sp!, {r0-r12}
+        mov r7, r0
+        mov r8, r2
+        bl compute_contact_normal
+        ldrsh r0, [r6, #BODY_T_IMPULSE_Y]
+        add r0, r0, r10, lsl #6
+        strh r0, [r6, #BODY_T_IMPULSE_Y]
+        ldrsh r0, [r6, #BODY_T_IMPULSE_X]
+        add r0, r0, r9, lsl #6
+        strh r0, [r6, #BODY_T_IMPULSE_X]
+        ldmfd sp!, {r0-r12}
+
         @@ XXX should set popping counter for balloon, but we have
         @@ entered the land of grotesque hacks now.
         ldr r0, =popped_balloon
