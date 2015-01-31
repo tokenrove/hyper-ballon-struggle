@@ -203,11 +203,13 @@ select_character:
         strh r2, [r1]
         mov r0, r2
         bl sine
-        ldr r1, =rotscale_distance
-        ldrsh r1, [r1]
+        ldr r5, =rotscale_distance
+        ldrb r5, [r5]
+        and r5, #0x7f
         asr r0, #15-8
-        mul r0, r1, r0
-        asr r0, #4
+        mov r4, r0
+        mul r0, r5, r0
+        asr r0, #6
         ldr r3, =REG_BG2RS
         strh r0, [r3, #4]
         rsb r0, r0, #0
@@ -215,8 +217,37 @@ select_character:
         mov r0, r2
         bl cosine
         asr r0, #15-8
+        mul r0, r5, r0
+        asr r0, #6
         strh r0, [r3, #0]
         strh r0, [r3, #6]
+        @@ sum(r=1 to n, a_i_r * b_r_j)
+        @@ v_0 = cos * (-120+64) - sin * (-80+64)
+        @@ v_1 = sin * (-120+64) + cos * (-80+64)
+        ldr r1, =(-160+64)<<4
+        mul r2, r4, r1
+        asr r2, #4
+        mla r2, r0, r1, r2
+        asr r2, #4
+        str r2, [r3, #12]
+        ldr r1, =(64)<<4
+        rsb r4, r4, #0
+        mul r2, r0, r1
+        asr r2, #4
+        mla r2, r4, r1, r2
+        asr r2, #4
+        str r2, [r3, #8]
+
+        ldr r0, =rotscale_distance
+        ldrb r2, [r0]
+        cmp r2, #0x7f
+        moveq r2, #0xff
+        cmp r2, #0x80
+        moveq r2, #0x00
+        tst r2, #0x80
+        addeq r2, r2, #1
+        subne r2, r2, #1
+        strb r2, [r0]
 
         @@ Check input
         ldr r2, =debounce
