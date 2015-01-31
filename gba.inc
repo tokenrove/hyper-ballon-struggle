@@ -28,6 +28,8 @@
 .equ REG_BG3SCX,    0x400001c	    @ Background 3 horizontal scroll
 .equ REG_BG3SCY,    0x400001e	    @ Background 3 vertical scroll
 
+.equ REG_BG2RS,     0x4000020       @ Background 2 rotscale parameters
+
 .equ REG_MOSAIC,    0x400004C	    @ Mosaic control.
 .equ REG_BLDCNT,    0x4000050	    @ Blend control.
 .equ REG_BLDALPHA,  0x4000052	    @ Alpha blend amount.

@@ -245,6 +245,9 @@ setup_arena:
         mov r1, #0x40
         orr r1, r1, #0b10111<<8	@ display sprites.
         strh r1, [r0]
+        mov r1, #0b00001110
+        orr r1, r1, #0x6200
+        strh r1, [r0, #0xC]	@ REG_BG2
 
         mov r0, #vram_base
         mov r1, #0x4000
@@ -302,8 +305,8 @@ setup_balloons:
         ldr r1, =REG_BLDCNT
         mov r3, #0x0f40
         strh r3, [r1], #2
-        mov r3, #0x0400
-        orr r3, r3, #0x1c
+        mov r3, #0x0800
+        orr r3, r3, #0x10
         strh r3, [r1]
 
         ldr r0, =balloons

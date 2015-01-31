@@ -1,6 +1,13 @@
 
         .include "gba.inc"
 
+        .section .ewram
+        @@ this could be in an overlay
+        .align
+        .lcomm rotscale_theta, 2
+        .lcomm rotscale_distance, 2
+        .align
+
         .section .text
         .align 2
         .global select_character
@@ -17,22 +24,100 @@
 select_character:
         stmfd sp!, {lr}
 
-        @ Wipe the screen
+        ldr r0, =select_tune_data
+        bl music_play_song
+
+        @@ Wipe the screen
         mov r0, #REG_DISPCNT
         mov r1, #0x41
         orr r1, r1, #0b10101<<8
         strh r1, [r0]
+
+        ldr r1, =REG_BLDCNT
+        mov r2, #0x0f40
+        strh r2, [r1], #2
+        ldr r2, =0x1f0a
+        strh r2, [r1]
+
+        ldr r1, =REG_BG2
+        ldr r2, =0x228b
+        strh r2, [r1]
+        ldr r1, =REG_BG2RS
+        mov r0, #0x100
+        strh r0, [r1]
+        strh r0, [r1, #6]
+        mov r0, #0
+        strh r0, [r1, #2]
+        strh r0, [r1, #4]
+
+        ldr r1, =rotscale_theta
+        mov r2, #0x42
+        strh r2, [r1]
+        ldr r1, =rotscale_distance
+        mov r2, #20
+        strh r2, [r1]
+
+        mov r0, #0
+        bl gfx_disable_sprites
 
         @@ setup the background
         mov r0, #vram_base
         mov r1, #0x4000
         bl dma_zero32
 
+        mov r0, #vram_base
+        add r0, #0x1000         @ BG2
+
+        mov r1, #256
+        @@ row xor column gives us a checkerboard
+1:      tst r1, #0b10
+        moveq r2, #0
+        movne r2, #1
+        tst r1, #0b100000
+        eorne r2, r2, #1
+        strb r2, [r0], #1
+        subs r1, r1, #1
+        bne 1b
+
+        @@ copy in tiles
+        mov r0, #vram_base
+        add r0, r0, #0x8000
+        @@ one blank square
+        mov r1, #0
+        mov r2, r1
+        mov r3, r1
+        mov r4, r1
+        mov r5, r1
+        mov r6, r1
+        mov r7, r1
+        mov r8, r1
+        stmia r0!, {r1-r8}
+        stmia r0!, {r1-r8}
+
+        @@ one filled square
+        mov r1, #2
+        orr r1, r1, r1, lsl #8
+        orr r1, r1, r1, lsl #16
+        mov r2, r1
+        mov r3, r1
+        mov r4, r1
+        mov r5, r1
+        mov r6, r1
+        mov r7, r1
+        mov r8, r1
+        stmia r0!, {r1-r8}
+        stmia r0!, {r1-r8}
+
         @@ Set a blue background
         mov r0, #palram_base
-        mov r1, #0x005e
-        strh r1, [r0]
         mov r1, #0x7e00
+        strh r1, [r0], #2
+        @@ font color
+        @@ ldr r1, =0xffff
+        mov r1, #0x1800
+        strh r1, [r0], #2
+        @@ and a darker blue foreground for our rotscale stuff
+        mov r1, #0xf000
         strh r1, [r0], #2
 
         bl copy_in_sprites
@@ -93,12 +178,6 @@ select_character:
         strh r1, [r5], #2
         mov r1, #0
         strh r1, [r5], #2
-        ldr r1, =REG_BLDCNT
-        mov r2, #0x0f40
-        strh r2, [r1], #2
-        mov r2, #0x1f00
-        orr r2, r2, #0x0a
-        strh r2, [r1]
 
 3:      add r0, r0, #32
         subs r3, r3, #1
@@ -117,7 +196,29 @@ select_character:
         cmp r5, r8
         blt 1b
 
-        @ Check input
+        @@ update rotscale stuff
+        ldr r1, =rotscale_theta
+        ldrsh r2, [r1]
+        add r2, r2, #1
+        strh r2, [r1]
+        mov r0, r2
+        bl sine
+        ldr r1, =rotscale_distance
+        ldrsh r1, [r1]
+        asr r0, #15-8
+        mul r0, r1, r0
+        asr r0, #4
+        ldr r3, =REG_BG2RS
+        strh r0, [r3, #4]
+        rsb r0, r0, #0
+        strh r0, [r3, #2]
+        mov r0, r2
+        bl cosine
+        asr r0, #15-8
+        strh r0, [r3, #0]
+        strh r0, [r3, #6]
+
+        @@ Check input
         ldr r2, =debounce
         ldrh r4, [r2]
 
@@ -274,8 +375,7 @@ copy_in_sprites:
         .section .rodata
         .align
 
-char_select_topmsg: .string "Select Warrior"
-char_names: .string "Dude"
+char_select_topmsg: .string "Select Your Champion"
 
         .align 2
 selector:       .incbin "data/selector.raw"

@@ -51,6 +51,10 @@ gfx_set_mode_1:
 
 
 @@@ Requires that interrupts be enabled.
+        @@ Note that we could have a "maybe" version that checks if we
+        @@ still have scanlines left (between 160 and 227) and doesn't
+        @@ wait, but this would mostly be useful for transitions; most of
+        @@ the code needs to always wait for VBL for timing purposes.
         .global gfx_wait_vblank
 gfx_wait_vblank:
         stmfd sp!, {r0,r1,r3,lr}
