@@ -15,7 +15,7 @@
         @@ Terminal velocity
         .equ TERMINAL_VELOCITY, 16
         @@ Collision radii squared
-        .equ COLLIDE_TYPE_0_RADIUS, 30
+        .equ COLLIDE_TYPE_0_RADIUS, 15
         .equ COLLIDE_TYPE_1_RADIUS, 150
 
         .equ BALLOON_TILE, 0
@@ -33,12 +33,13 @@
         .equ MAX_BALLOONS,8
 
         .equ BALLOON_MASS, 0xff
-        .equ BALLOON_LIFT, -7
-        .equ BALLOON_DISTANCE, 15
+        .equ BALLOON_LIFT, -5
+        .equ BALLOON_DISTANCE, 12
 
         .equ BLINK_TIME, 60
         .equ EXERTION_BASE_SHIFT, 1
         .equ EXERTION_MAX_SHIFT, 2
+        .equ COST_PER_FLAP, 16
 
         .equ BODY_T_X, 0
         .equ BODY_T_Y, 2
@@ -50,6 +51,8 @@
         .equ BODY_T_MASS, 13
 
         .equ BALLOON_T_POPPING_CTR, 14
+        .equ ACTOR_T_FLAP_CTR, 14
+        .equ ACTOR_T_TARGET_CTR, 15
 
         .equ ACTOR_T_ARCHETYPE_PTR, 16
         .equ ACTOR_T_EXERTION, 20
@@ -60,6 +63,8 @@
         .equ ACTOR_T_BALLOONS, 27
         .equ ACTOR_T_INVULNERABILITY, 28
         .equ ACTOR_T_IDENTITY, 29
+        .equ ACTOR_T_STATE, 30
+        .equ ACTOR_T_TARGET, 31
 
         .section .iwram
 
@@ -395,10 +400,11 @@ setup_balloonist:
         strb r1, [r8, #ACTOR_T_ANIMATION]
         strb r1, [r8, #ACTOR_T_INVULNERABILITY]
         strh r1, [r8, #ACTOR_T_EXERTION]
-
-        @@ XXX should clear enemy state info here
-        mov r3, #40
-        strh r3, [r8, #BODY_T_IMPULSE_X]
+        strb r1, [r8, #ACTOR_T_STATE]
+        strb r1, [r8, #ACTOR_T_TARGET]
+        mov r1, #1
+        strb r1, [r8, #ACTOR_T_FLAP_CTR]
+        strb r1, [r8, #ACTOR_T_TARGET_CTR]
 
         @@ start with 4 balloons
         mov r5, #0b1111
@@ -613,7 +619,7 @@ flap:
         lsl r2, #EXERTION_BASE_SHIFT
         cmp r1, r2
         bgt 0f
-        add r1, r1, #20
+        add r1, r1, #COST_PER_FLAP
         cmp r1, r2
         addge r1, r1, r2
         strh r1, [r4, #ACTOR_T_EXERTION]
@@ -637,10 +643,22 @@ flap:
 
 
         @@ r4 = us
+        @@ r5 = arena
+        @@ r6 = them
 enemy_action:
+        ldrb r0, [r4, #ACTOR_T_STATE]
+        ldr r1, =dispatch_table
+        ldr pc, [r1, r0, lsl #2]
+
+initial_state:
+        mov r0, #ST_MAINTAIN_EQUILIBRIUM
+        strb r0, [r4, #ACTOR_T_STATE]
+        bx lr
+
+approach_player:
         stmfd sp!, {lr}
         @@ XXX needs to become a separate state variable
-        ldrb r0, [r4, #ACTOR_T_FRAME_DELAY]
+        ldrb r0, [r4, #ACTOR_T_FLAP_CTR]
         subs r0, r0, #1
         movne r3, #0
         bne 0f
@@ -651,9 +669,67 @@ enemy_action:
         movgt r0, #0b10
         moveq r0, #0
         bl flap
-        mov r0, #20
-0:      strb r0, [r4, #ACTOR_T_FRAME_DELAY]
+        mov r0, #37
+0:      strb r0, [r4, #ACTOR_T_FLAP_CTR]
         ldmfd sp!, {pc}
+
+        @@ wish we had vcnt
+        @@ this is per Hacker's Delight
+        @@ uses r0-r2
+popcnt:
+        ldr r1, =0x55555555
+        and r1, r1, r0, lsr #1
+        sub r0, r0, r1
+        @@ There must be a way to avoid this intermediary register
+        ldr r2, =0x33333333
+        and r1, r2, r0, lsr #2
+        and r0, r0, r2
+        add r0, r0, r1
+        add r0, r0, r0, lsr #4
+        ldr r1, =0x0f0f0f0f
+        and r0, r0, r1
+        add r0, r0, r0, lsr #8
+        add r0, r0, r0, lsr #16
+        and r0, r0, #0x3f
+        mov pc, lr
+
+maintain_equilibrium:
+        stmfd sp!, {lr}
+        @@ XXX needs to become a separate state variable
+        ldrb r0, [r4, #ACTOR_T_FLAP_CTR]
+        subs r0, r0, #1
+        movne r3, #0
+        bne 0f
+        mov r0, #0
+        bl flap
+        @@ flap count to maintain this altitude:
+        @@ (strength<<4) / (gravity + lift) * cost
+
+        ldrb r0, [r4, #ACTOR_T_BALLOONS]
+        bl popcnt
+        mov r1, #BALLOON_LIFT
+        ldrb r2, [r5, #ARENA_T_GRAVITY]
+        mla r0, r1, r0, r2
+        @@ r1 = number of balloons * lift + gravity
+        mov r1, #COST_PER_FLAP
+        mul r1, r0, r1
+        ldr r0, [r4, #ACTOR_T_ARCHETYPE_PTR]
+        ldrb r0, [r0, #ARCHETYPE_T_STRENGTH]
+        lsl r0, #12
+        swi #6<<16              @ slow division
+        asr r0, #4
+        stmfd sp!, {r0-r3}
+        bl print_debug_word
+        ldmfd sp!, {r0-r3}
+0:      strb r0, [r4, #ACTOR_T_FLAP_CTR]
+        ldmfd sp!, {pc}
+
+        .align 2
+dispatch_table:
+        .equ ST_INITIAL, 0
+        .equ ST_MAINTAIN_EQUILIBRIUM, 1
+        .equ ST_APPROACH_PLAYER, 2
+        .word initial_state, maintain_equilibrium, approach_player
 
 
 update_exertion:
