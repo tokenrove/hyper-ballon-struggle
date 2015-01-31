@@ -598,6 +598,7 @@ render_balloonist:
 
 9:      ldmfd sp!, {pc}
 
+        .pool
 
 @ FIXME replace raw compares with table lookups of player speeds
         @@ r4 = us
@@ -1281,6 +1282,10 @@ apply_arena_wrapping:
 9:      ldmfd sp!, {r6,r9,r10,pc}
 
 
+        @@ r4 = body A
+        @@ r6 = body B
+        @@ r7 = distance squared (in pixels)
+        @@ r8 = penetration squared (in pixels)
 compute_contact_normal_opp:
         stmfd sp!, {lr}
         bl compute_contact_normal
@@ -1289,6 +1294,10 @@ compute_contact_normal_opp:
         ldmfd sp!, {pc}
 
 
+        @@ r4 = body A
+        @@ r6 = body B
+        @@ r7 = distance squared (in pixels)
+        @@ r8 = penetration squared (in pixels)
 compute_contact_normal:
         stmfd sp!, {lr}
         @@ XXX Ideally, we'd use the reciprocal square root here.
@@ -1325,8 +1334,10 @@ compute_contact_normal:
 
         @@ r4 = body A
         @@ r6 = body B
-        @@ r7 = distance squared (in pixels)
-        @@ r8 = penetration squared (in pixels)
+        @@ r7 = distance
+        @@ r8 = penetration
+        @@ r9 = normal x
+        @@ r10 = normal y
 resolve_contact:
         stmfd sp!, {r7-r12,lr}
         @@ compute total inverse mass
@@ -1334,10 +1345,6 @@ resolve_contact:
         ldrb r1, [r6, #BODY_T_MASS]
         add r11, r0, r1         @ 0.8
 
-        @@ r7 = distance
-        @@ r8 = penetration
-        @@ r9 = normal x
-        @@ r10 = normal y
         @@ r11 = total inverse mass
 
         @@ compute unit movement for resolving penetration
