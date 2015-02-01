@@ -35,7 +35,7 @@ gameover.o: data/gameover.map
 select.o: data/selector.raw
 challenge.o: data/versus.raw256
 
-arenas.o: data/arena_default_mg.map data/arena_default_bg.map data/arena_vtube_mg.map data/arena_vtube_bg.map data/arena_lozenge_mg.map data/arena_lozenge_bg.map
+arenas.o: data/arena_default_mg.map data/arena_default_bg.map data/arena_vtube_mg.map data/arena_vtube_bg.map data/arena_lozenge_mg.map data/arena_lozenge_bg.map data/arena_gobacktospace_mg.map data/arena_gobacktospace_bg.map
 
 main: $(SRCOBJS) $(DATAOBJS)
 	$(LD) -T linkscript $^ -o $@

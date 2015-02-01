@@ -3,7 +3,7 @@
         .align 2
         .global arena_table
 arena_table:
-        .word default, vtube, lozenge
+        .word default, vtube, lozenge, gobacktospace
         .word 0
 
 @@@ Arena structure:
@@ -98,3 +98,28 @@ lozenge_background:
 0: .incbin "data/arena_lozenge_bg.tiles"
 1:
 lozenge_palette:        .incbin "data/arena_lozenge_mg.pal"
+
+        .local gobacktospace, gobacktospace_midground, gobacktospace_palette, gobacktospace_background
+        .align 2
+gobacktospace:
+        .byte 0b0101
+        .byte 21
+        .hword 0
+        .byte 42,100
+        .byte 120,100
+        .word gobacktospace_palette
+        .word gobacktospace_midground
+        .word gobacktospace_background
+gobacktospace_midground:
+        .byte 30, 20
+        .incbin "data/arena_gobacktospace_mg.map"
+        .hword (1f - 0f)/32
+0: .incbin "data/arena_gobacktospace_mg.tiles"
+1:
+gobacktospace_background:
+        .byte 30, 20
+        .incbin "data/arena_gobacktospace_bg.map"
+        .hword (1f - 0f)/32
+0: .incbin "data/arena_gobacktospace_bg.tiles"
+1:
+gobacktospace_palette:        .incbin "data/arena_gobacktospace_mg.pal"

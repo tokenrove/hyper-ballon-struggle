@@ -116,15 +116,20 @@ init:
         @@ Palette first so we can load both together as a 16-bit load
         .align
 levels:
-        .byte PALETTE_GREEN
-        .byte PALETTE_YELLOW
-        .byte CHAR_RUDOLPH
-        .byte ARENA_DEFAULT
+        .byte PALETTE_PINK
+        .byte PALETTE_CYAN
+        .byte CHAR_MYR
+        .byte ARENA_GOBACKTOSPACE
 
         .byte PALETTE_SALMON
         .byte PALETTE_SLATE_BLUE
         .byte CHAR_ICECLOWN
         .byte ARENA_LOZENGE
+
+        .byte PALETTE_GREEN
+        .byte PALETTE_YELLOW
+        .byte CHAR_RUDOLPH
+        .byte ARENA_DEFAULT
 
         .byte PALETTE_PURPLE
         .byte PALETTE_RED
