@@ -132,7 +132,7 @@ challenge:
         @@ BG2
         mov r0, #vram_base
         add r0, r0, #0x800*4
-        mov r1, #0x100
+        mov r1, #0x800
         bl dma_zero32
 
         mov r0, #vram_base
@@ -153,6 +153,9 @@ challenge:
 
         @@ XXX we could actually pack all this stuff into one bank
         @@ copy in VERSUS
+        ldr r0, =vram_base + 0x8000
+        mov r1, #0x40
+        bl dma_zero32
         ldr r0, =vram_base + 0x8040
         ldr r1, =versus_data
         ldr r2, =versus_len
