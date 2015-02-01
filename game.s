@@ -94,7 +94,10 @@ play_game:
         stmfd sp!, {r5-r12,lr}
 
         stmfd sp!, {r0-r3}
-        ldr r0, =in_game_song_data
+        bl random_word
+        tst r0, #1
+        ldreq r0, =other_song_data
+        ldrne r0, =in_game_song_data
         bl music_play_song
         ldmfd sp!, {r0-r3}
 

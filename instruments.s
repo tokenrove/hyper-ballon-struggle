@@ -7,7 +7,9 @@ instrument_bank_0:
 	@ Instrument banks
 	.global instr_standard_sqr0
 instr_standard_sqr0:
-.word 0x8f8f0000,0xff3f005f
+        .word 0x82800000
+        .word 0xff3f005f        @ ridiculous slide effect
+        .word 0x8f8f0000
 
 	.global instr_standard_sqr1
 instr_standard_sqr1:
