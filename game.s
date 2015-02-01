@@ -621,33 +621,6 @@ human_input:
         ldrh r1, [r2], #2
         ldrh r2, [r2]           @ debounce
 
-        @@ XXX temporary debug function: hold A to fly around
-        tst r1, #1
-        bne .Lregular_input
-
-        mov r3, #0
-        strh r3, [r4, #BODY_T_IMPULSE_Y]
-
-        tst r1, #0x10
-        bne 1f
-        mov r3, #1<<(IMPULSE_SCALING-2)
-        strh r3, [r4, #BODY_T_IMPULSE_X]
-1:      tst r1, #0x20
-        bne 1f
-        mov r3, #-1
-        lsl r3, #IMPULSE_SCALING-2
-        strh r3, [r4, #BODY_T_IMPULSE_X]
-1:      tst r1, #0x40
-        bne 1f
-        mov r3, #-1
-        lsl r3, #IMPULSE_SCALING-2
-        strh r3, [r4, #BODY_T_IMPULSE_Y]
-1:      tst r1, #0x80
-        bne 1f
-        mov r3, #2<<(IMPULSE_SCALING-2)
-        strh r3, [r4, #BODY_T_IMPULSE_Y]
-1:      ldmfd sp!, {pc}
-
 .Lregular_input:
         @@ B button (flap)
         tst r2, #0b10           @ B button
