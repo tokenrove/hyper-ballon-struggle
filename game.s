@@ -803,7 +803,6 @@ popcnt:
 
 maintain_equilibrium:
         stmfd sp!, {lr}
-        @@ XXX needs to become a separate state variable
         ldrb r0, [r4, #ACTOR_T_FLAP_CTR]
         subs r0, r0, #1
         movne r3, #0
@@ -1497,6 +1496,9 @@ check_balloon_collisions:
 
         @@ skip balloon/actor check if our owner is invulnerable
         cmp r9, #0
+        bne 1f
+        ldrb r0, [r6, #ACTOR_T_INVULNERABILITY]
+        cmp r0, #0
         bne 1f
         @@ check balloons against opponent
         bl check_body_collision
