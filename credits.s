@@ -28,6 +28,7 @@ roll_credits:
         bl gfx_fade_to
 
         bl wait_for_start_toggled
+        bl gfx_fade_to_black
         ldmfd sp!, {pc}
 
         .section .rodata
