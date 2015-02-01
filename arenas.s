@@ -3,7 +3,7 @@
         .align 2
         .global arena_table
 arena_table:
-        .word default, vtube
+        .word default, vtube, lozenge
         .word 0
 
 @@@ Arena structure:
@@ -72,3 +72,29 @@ vtube_background:
 0: .incbin "data/arena_vtube_bg.tiles"
 1:
 vtube_palette:        .incbin "data/arena_vtube_mg.pal"
+
+
+        .local lozenge, lozenge_midground, lozenge_palette, lozenge_background
+        .align 2
+lozenge:
+        .byte 0b0001
+        .byte 50
+        .hword 0
+        .byte 42,100
+        .byte 90,4
+        .word lozenge_palette
+        .word lozenge_midground
+        .word lozenge_background
+lozenge_midground:
+        .byte 30, 20
+        .incbin "data/arena_lozenge_mg.map"
+        .hword (1f - 0f)/32
+0: .incbin "data/arena_lozenge_mg.tiles"
+1:
+lozenge_background:
+        .byte 30, 20
+        .incbin "data/arena_lozenge_bg.map"
+        .hword (1f - 0f)/32
+0: .incbin "data/arena_lozenge_bg.tiles"
+1:
+lozenge_palette:        .incbin "data/arena_lozenge_mg.pal"

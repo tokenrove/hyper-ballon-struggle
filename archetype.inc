@@ -4,7 +4,7 @@
         .equ ARCHETYPE_T_STRENGTH, 8
         .equ ARCHETYPE_T_STAMINA, 9
         .equ ARCHETYPE_T_MASS, 10
-        .equ ARCHETYPE_T_UNUSED, 11
+        .equ ARCHETYPE_T_FURY, 11
         .equ ARCHETYPE_T_DEFAULT_PALETTE, 12
         .equ ARCHETYPE_T_ALTERNATE_PALETTE, 14
         .equ ARCHETYPE_T_FRAME_PTRS, 16
@@ -19,6 +19,7 @@
         .equ CHAR_RANDY, 7
         .equ CHAR_MONOCLE, 8
         .equ CHAR_MELVILLE, 9
+        .equ CHAR_ICECLOWN, 10
 
         .equ PALETTE_BLUE, 0
         .equ PALETTE_GREEN, 1
@@ -29,3 +30,5 @@
         .equ PALETTE_PURPLE, 6
         .equ PALETTE_RED, 7
         .equ PALETTE_GOTH, 8
+        .equ PALETTE_SALMON, 9
+        .equ PALETTE_SLATE_BLUE, 10

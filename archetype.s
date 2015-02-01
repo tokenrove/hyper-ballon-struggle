@@ -114,6 +114,17 @@ archetype_table:
         .byte PALETTE_RED, PALETTE_GOTH
         .byte PALETTE_BEARD, PALETTE_PINK
         .word melville_fly, melville_bump, melville_die, melville_win
+
+        .asciz "Iceclwn"
+        .balign 8
+        .byte 80                @ strength
+        .byte 40                @ stamina
+        .byte 140               @ mass
+        .byte 0
+        .byte PALETTE_SALMON, PALETTE_SLATE_BLUE
+        .byte PALETTE_BLUE, PALETTE_GREEN
+        .word iceclown_fly, iceclown_bump, iceclown_die, iceclown_win
+
 archetype_table_len:    .hword .-archetype_table
 
 @@@ Tile data
@@ -193,6 +204,13 @@ melville_bump:    .incbin "data/melville_bump.raw"
 melville_die:     .incbin "data/melville_die.raw"
 melville_win:     .incbin "data/melville_win.raw"
 
+        .local iceclown_fly, iceclown_bump, iceclown_die, iceclown_win
+        .align 2
+iceclown_fly:     .incbin "data/iceclown_fly.raw"
+iceclown_bump:    .incbin "data/iceclown_bump.raw"
+iceclown_die:     .incbin "data/iceclown_die.raw"
+iceclown_win:     .incbin "data/iceclown_win.raw"
+
         .global invariant_palette
 invariant_palette:
         @@ Invariant part
@@ -210,6 +228,8 @@ palette_purple: .byte 0x07, 0x1c, 0x0e, 0x34, 0x14, 0x50, 0x1b, 0x68
 palette_red:    .byte 0x06, 0x00, 0x0d, 0x00, 0x13, 0x00, 0x1a, 0x00
 palette_goth:   .byte 0x00, 0x00, 0x00, 0x00, 0xad, 0x35, 0xf7, 0x5e
 
+palette_salmon: .hword 0x0008, 0x1070, 0x20f7, 0x317f
+palette_slate_blue: .hword 0x30c4, 0x49a9, 0x626f, 0x7b35
         @@ extras until we have a full set
         .byte 0x06, 0x00, 0x0d, 0x00, 0x13, 0x00, 0x1a, 0x00
         .hword 0x00e0, 0x01e0, 0x02e0, 0x03e0

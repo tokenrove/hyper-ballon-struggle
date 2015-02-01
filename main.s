@@ -121,6 +121,11 @@ levels:
         .byte CHAR_RUDOLPH
         .byte ARENA_DEFAULT
 
+        .byte PALETTE_SALMON
+        .byte PALETTE_SLATE_BLUE
+        .byte CHAR_ICECLOWN
+        .byte ARENA_LOZENGE
+
         .byte PALETTE_GREEN
         .byte PALETTE_YELLOW
         .byte CHAR_MONOCLE

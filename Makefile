@@ -27,7 +27,7 @@ data/versus.raw256: data/versus.pcx roz
 %.map: %.pcx mortimer
 	./mortimer $<
 
-archetype.o: data/retsyn_fly.raw data/retsyn_bump.raw data/retsyn_die.raw data/retsyn_win.raw data/rudolph_fly.raw data/rudolph_bump.raw data/rudolph_die.raw data/rudolph_win.raw data/alien_fly.raw data/alien_bump.raw data/alien_die.raw data/alien_win.raw data/octo_fly.raw data/octo_bump.raw data/octo_die.raw data/octo_win.raw data/pierce_fly.raw data/pierce_bump.raw data/pierce_die.raw data/pierce_win.raw data/greedy_fly.raw data/greedy_bump.raw data/greedy_die.raw data/greedy_win.raw data/myr_fly.raw data/myr_bump.raw data/myr_die.raw data/myr_win.raw data/randy_fly.raw data/randy_bump.raw data/randy_die.raw data/randy_win.raw data/monocle_fly.raw data/monocle_win.raw data/melville_fly.raw data/melville_bump.raw data/melville_die.raw data/melville_win.raw data/ball2.raw data/ball2e.raw data/sweatdrop.raw
+archetype.o: data/retsyn_fly.raw data/retsyn_bump.raw data/retsyn_die.raw data/retsyn_win.raw data/rudolph_fly.raw data/rudolph_bump.raw data/rudolph_die.raw data/rudolph_win.raw data/alien_fly.raw data/alien_bump.raw data/alien_die.raw data/alien_win.raw data/octo_fly.raw data/octo_bump.raw data/octo_die.raw data/octo_win.raw data/pierce_fly.raw data/pierce_bump.raw data/pierce_die.raw data/pierce_win.raw data/greedy_fly.raw data/greedy_bump.raw data/greedy_die.raw data/greedy_win.raw data/myr_fly.raw data/myr_bump.raw data/myr_die.raw data/myr_win.raw data/randy_fly.raw data/randy_bump.raw data/randy_die.raw data/randy_win.raw data/monocle_fly.raw data/monocle_win.raw data/melville_fly.raw data/melville_bump.raw data/melville_die.raw data/melville_win.raw data/iceclown_fly.raw data/iceclown_bump.raw data/iceclown_die.raw data/iceclown_win.raw data/ball2.raw data/ball2e.raw data/sweatdrop.raw
 
 title.o: data/title.map
 victory.o: data/victory.map
@@ -35,7 +35,7 @@ gameover.o: data/gameover.map
 select.o: data/selector.raw
 challenge.o: data/versus.raw256
 
-arenas.o: data/arena_default_mg.map data/arena_default_bg.map data/arena_vtube_mg.map data/arena_vtube_bg.map
+arenas.o: data/arena_default_mg.map data/arena_default_bg.map data/arena_vtube_mg.map data/arena_vtube_bg.map data/arena_lozenge_mg.map data/arena_lozenge_bg.map
 
 main: $(SRCOBJS) $(DATAOBJS)
 	$(LD) -T linkscript $^ -o $@
