@@ -3,7 +3,7 @@
         .align 2
         .global arena_table
 arena_table:
-        .word default, vtube, lozenge, gobacktospace
+        .word default, vtube, lozenge, gobacktospace, iceblocks, gnmmine, maelstrom
         .word 0
 
 @@@ Arena structure:
@@ -123,3 +123,78 @@ gobacktospace_background:
 0: .incbin "data/arena_gobacktospace_bg.tiles"
 1:
 gobacktospace_palette:        .incbin "data/arena_gobacktospace_mg.pal"
+
+        .local iceblocks, iceblocks_midground, iceblocks_palette, iceblocks_background
+        .align 2
+iceblocks:
+        .byte 0b0101
+        .byte 45
+        .hword 0
+        .byte 42,100
+        .byte 120,100
+        .word iceblocks_palette
+        .word iceblocks_midground
+        .word iceblocks_background
+iceblocks_midground:
+        .byte 30, 20
+        .incbin "data/arena_iceblocks_mg.map"
+        .hword (1f - 0f)/32
+0: .incbin "data/arena_iceblocks_mg.tiles"
+1:
+iceblocks_background:
+        .byte 30, 20
+        .incbin "data/arena_iceblocks_bg.map"
+        .hword (1f - 0f)/32
+0: .incbin "data/arena_iceblocks_bg.tiles"
+1:
+iceblocks_palette:        .incbin "data/arena_iceblocks_mg.pal"
+
+        .local gnmmine, gnmmine_midground, gnmmine_palette, gnmmine_background
+        .align 2
+gnmmine:
+        .byte 0b0101
+        .byte 55
+        .hword 0
+        .byte 42,100
+        .byte 120,100
+        .word gnmmine_palette
+        .word gnmmine_midground
+        .word gnmmine_background
+gnmmine_midground:
+        .byte 30, 20
+        .incbin "data/arena_gnmmine_mg.map"
+        .hword (1f - 0f)/32
+0: .incbin "data/arena_gnmmine_mg.tiles"
+1:
+gnmmine_background:
+        .byte 30, 20
+        .incbin "data/arena_gnmmine_bg.map"
+        .hword (1f - 0f)/32
+0: .incbin "data/arena_gnmmine_bg.tiles"
+1:
+gnmmine_palette:        .incbin "data/arena_gnmmine_mg.pal"
+
+        .local maelstrom, maelstrom_midground, maelstrom_palette, maelstrom_background
+        .align 2
+maelstrom:
+        .byte 0b1101
+        .byte 40
+        .hword 0
+        .byte 42,100
+        .byte 120,100
+        .word maelstrom_palette
+        .word maelstrom_midground
+        .word maelstrom_background
+maelstrom_midground:
+        .byte 30, 20
+        .incbin "data/arena_maelstrom_mg.map"
+        .hword (1f - 0f)/32
+0: .incbin "data/arena_maelstrom_mg.tiles"
+1:
+maelstrom_background:
+        .byte 30, 20
+        .incbin "data/arena_maelstrom_bg.map"
+        .hword (1f - 0f)/32
+0: .incbin "data/arena_maelstrom_bg.tiles"
+1:
+maelstrom_palette:        .incbin "data/arena_maelstrom_mg.pal"

@@ -118,18 +118,38 @@ init:
 levels:
         .byte PALETTE_PINK
         .byte PALETTE_CYAN
-        .byte CHAR_MYR
-        .byte ARENA_GOBACKTOSPACE
+        .byte CHAR_MELVILLE
+        .byte ARENA_LOZENGE
+
+        .byte PALETTE_PINK
+        .byte PALETTE_CYAN
+        .byte CHAR_GREEDY
+        .byte ARENA_GNMMINE
 
         .byte PALETTE_SALMON
         .byte PALETTE_SLATE_BLUE
         .byte CHAR_ICECLOWN
-        .byte ARENA_LOZENGE
+        .byte ARENA_ICEBLOCKS
+
+        .byte PALETTE_PINK
+        .byte PALETTE_CYAN
+        .byte CHAR_MYR
+        .byte ARENA_GOBACKTOSPACE
+
+        .byte PALETTE_PIERCE_1
+        .byte PALETTE_CYAN
+        .byte CHAR_PIERCE
+        .byte ARENA_MAELSTROM
 
         .byte PALETTE_GREEN
         .byte PALETTE_YELLOW
-        .byte CHAR_RUDOLPH
+        .byte CHAR_RANDY
         .byte ARENA_DEFAULT
+
+        .byte PALETTE_PINK
+        .byte PALETTE_CYAN
+        .byte CHAR_HARVEY
+        .byte ARENA_LOZENGE
 
         .byte PALETTE_PURPLE
         .byte PALETTE_RED

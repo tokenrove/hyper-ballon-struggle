@@ -4,6 +4,9 @@
         .equ ARENA_VTUBE, 1
         .equ ARENA_LOZENGE, 2
         .equ ARENA_GOBACKTOSPACE, 3
+        .equ ARENA_ICEBLOCKS, 4
+        .equ ARENA_GNMMINE, 5
+        .equ ARENA_MAELSTROM, 6
 
         .equ ARENA_T_FLAGS, 0
         .equ ARENA_T_GRAVITY, 1

@@ -14,7 +14,7 @@
         .equ CHAR_RALPH, 2
         .equ CHAR_LOPEZ, 3
         .equ CHAR_PIERCE, 4
-        .equ CHAR_LANA, 5
+        .equ CHAR_GREEDY, 5
         .equ CHAR_MYR, 6
         .equ CHAR_RANDY, 7
         .equ CHAR_SAM, 8
