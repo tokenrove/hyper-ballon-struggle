@@ -12,7 +12,7 @@ default: mortimer roz main.bin
 
 SRCOBJS=start.o main.o dma.o gfx.o util.o interrupt.o font.o music.o random.o trig.o \
 	game.o title.o select.o challenge.o victory.o gameover.o credits.o
-DATAOBJS=archetype.o fontdat.o arenas.o instruments.o title-song.o in-game-song.o game-over-sting.o select-tune.o
+DATAOBJS=archetype.o fontdat.o arenas.o instruments.o title-song.o in-game-song.o game-over-sting.o select-tune.o victory-sting.o sight-for-sore-thumbs.o
 
 
 %.s: %.nws

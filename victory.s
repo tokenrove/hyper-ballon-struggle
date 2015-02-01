@@ -21,6 +21,8 @@ victory:
         stmfd sp!, {r0-r3,lr}
 
         bl gfx_wait_vblank
+        ldr r0, =victory_fanfare_data
+        bl music_play_song
 
         mov r0, #0
         bl gfx_disable_sprites

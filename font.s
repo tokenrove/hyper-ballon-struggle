@@ -49,36 +49,42 @@ font_load:
 @
 	.global font_putstring
 font_putstring:
-        stmfd sp!,{r0-r10,lr}
-
-	ldr r10, =font_xlat	@ ASCII translation table
-
-	mov r1, r1, lsr #3
-	mov r2, r2, lsr #3
-
-	mov r4, #vram_base	@ beginning
-	add r4, r4, r1, lsl #1
-	add r4, r4, r2, lsl #6
-
-1:	ldrb r7, [r0], #1	@ get the next char in the string
-	cmp r7, #0
-	beq 9f			@ NUL terminated
-	ldrb r7, [r10, r7]	@ xlate
-	add r7, r7, #font_tile_idx	@ and push up the idx
-
-	mov r6, r7
-	strh r6, [r4], #2
-
-	@ increment x, clip
-	add r1, r1, #1
-	cmp r1, #32		@ right-side clip
-	bge 9f
-
-	b 1b			@ rinse and repeat
-
-9:	ldmfd sp!,{r0-r10,lr}
-	bx lr
+        stmfd sp!,{r0,lr}
+        bl font_putstring_return_end
+        ldmfd sp!,{r0,pc}
 @ EOR font_putstring
 
+
+        .global font_putstring_return_end
+font_putstring_return_end:
+        stmfd sp!,{r1-r10,lr}
+
+        ldr r10, =font_xlat	@ ASCII translation table
+
+        mov r1, r1, lsr #3
+        mov r2, r2, lsr #3
+
+        mov r4, #vram_base	@ beginning
+        add r4, r4, r1, lsl #1
+        add r4, r4, r2, lsl #6
+
+1:	ldrb r7, [r0], #1	@ get the next char in the string
+        cmp r7, #0
+        beq 9f			@ NUL terminated
+        ldrb r7, [r10, r7]	@ xlate
+        add r7, r7, #font_tile_idx	@ and push up the idx
+
+        mov r6, r7
+        strh r6, [r4], #2
+
+        @ increment x, clip
+        add r1, r1, #1
+        cmp r1, #32		@ right-side clip
+        bge 9f
+
+        b 1b			@ rinse and repeat
+
+9:	ldmfd sp!,{r1-r10,lr}
+        bx lr
 
 @ EOF font.s
