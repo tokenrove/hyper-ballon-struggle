@@ -18,6 +18,9 @@ DATAOBJS=archetype.o fontdat.o arenas.o instruments.o title-song.o in-game-song.
 %.s: %.nws
 	notangle -L'.line %L%N' outline.nws $^ > $@
 
+data/versus.raw256: data/versus.pcx roz
+	./roz -millersoft -p $<
+
 %.raw: %.pcx roz
 	./roz $<
 
@@ -30,6 +33,7 @@ title.o: data/title.map
 victory.o: data/victory.map
 gameover.o: data/gameover.map
 select.o: data/selector.raw
+challenge.o: data/versus.raw256
 
 arenas.o: data/arena_default_mg.map data/arena_default_bg.map data/arena_vtube_mg.map data/arena_vtube_bg.map
 
@@ -55,4 +59,4 @@ roz: tools/pcx.cmx tools/tile.cmx tools/roz.ml
 	ocamlopt -I tools $^ -o roz
 
 clean:
-	$(RM) *.o data/*.raw data/*.map data/*.tiles data/*.pal mortimer roz tools/*.cmx tools/*.cmi main main.bin
+	$(RM) *.o data/*.raw data/*.raw256 data/*.map data/*.tiles data/*.pal mortimer roz tools/*.cmx tools/*.cmi main main.bin

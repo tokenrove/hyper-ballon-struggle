@@ -17,8 +17,20 @@ title_screen:
 
         mov r0, #REG_DISPCNT
         mov r1, #0x0040		@ mode 0, 1D
-        orr r1, r1, #0b00011<<8 @ backgrounds, no sprites
+        orr r1, r1, #0b00010<<8 @ backgrounds, no sprites
         strh r1, [r0]
+        mov r1, #0b00000100
+        strh r1, [r0, #8]	@ REG_BG0
+        mov r1, #0
+        strh r1, [r0, #0x10]	@ REG_BG0SCX
+        strh r1, [r0, #0x12]	@ REG_BG0SCY
+
+        mov r1, #0b00001001
+        orr r1, r1, #0x0100
+        strh r1, [r0, #0xA]	@ REG_BG1
+        mov r1, #0
+        strh r1, [r0, #0x14]	@ REG_BG1SCX
+        strh r1, [r0, #0x16]	@ REG_BG1SCY
 
         @@ copy title screen to VRAM BG1
         mov r0, #1

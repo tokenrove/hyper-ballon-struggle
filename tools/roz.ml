@@ -116,19 +116,41 @@ let main unit =
         let orig_image = Pcx.load pcx_file in
         close_in pcx_file;
 
-        if (List.mem OptMillerSoft options) then (match orig_image with
-            | (image,w,h,palette) ->
-            (* Write the tile data to a file. *)
-            let data_file = open_out_bin ((base_name filename) ^ ".raw256") in
-            output_string data_file (image);
-            close_out data_file;
+        if (List.mem OptMillerSoft options) then (
+          (* Write the tile data to a file. *)
+          let tile_w = 8 and tile_h = 8 in
 
-            if (List.mem OptPaletteOutput options) then (
-                let palette_file = open_out_bin
-                    ((base_name filename) ^ ".pal") in
-                output_string palette_file (palette_massage palette);
-                close_out palette_file;
-            );
+          (* Do the grunt work. *)
+          let tiles = match orig_image with
+            | (img,w,h,_) ->
+              let tiles = Array.make (w*h) "" in
+              for x = 0 to (w/tile_w)-1 do
+                for y = 0 to (h/tile_h)-1 do
+                  let t = try Tile.grab img x y (w/tile_w) with
+                    | Tile.Bad_tile ->
+                      Printf.fprintf stderr "at %d,%d\n" x y; ""
+                  in
+                  tiles.(x+y*(w/tile_w)) <- t;
+                done;
+              done;
+              tiles
+          in
+
+          (* Write the tile data to a file. *)
+          let tiledata_file = open_out_bin ((base_name filename) ^ ".raw256") in
+          for i = 0 to Array.length tiles - 1 do
+            output_string tiledata_file tiles.(i)
+          done;
+          close_out tiledata_file;
+
+          if (List.mem OptPaletteOutput options) then (
+            let palette_file = open_out_bin
+                ((base_name filename) ^ ".pal") in
+            (match orig_image with
+             | (_,_,_,palette) ->
+               output_string palette_file (palette_massage palette));
+            close_out palette_file;
+          );
         ) else (
             let tile_w = 8 and tile_h = 8 in
 
