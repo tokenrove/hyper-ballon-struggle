@@ -1159,10 +1159,11 @@ update_body_motion:
         mov r7, #0
         b .Ldone_clipping
 .Lbottom_side:
-        cmp r8, #-8
+        cmp r8, #0
         bgt .Ldone_clipping
-        mov r8, #-8
-        mov r7, #0
+        mov r8, #0
+        @@ stop camping at the ceiling
+        mov r7, #128
 
 .Ldone_clipping:
         ldmfd sp!, {r0,r4,r6}
