@@ -12,7 +12,7 @@ default: mortimer roz main.bin
 
 SRCOBJS=start.o main.o dma.o gfx.o util.o interrupt.o font.o music.o random.o trig.o \
 	game.o title.o select.o challenge.o victory.o gameover.o credits.o
-DATAOBJS=archetype.o fontdat.o arenas.o instruments.o title-song.o in-game-song.o game-over-sting.o select-tune.o victory-sting.o sight-for-sore-thumbs.o
+DATAOBJS=archetype.o fontdat.o arenas.o instruments.o title-song.o in-game-song.o game-over-sting.o select-tune.o victory-sting.o sight-for-sore-thumbs.o philip-glassy.o
 
 
 %.s: %.nws
@@ -27,7 +27,7 @@ data/versus.raw256: data/versus.pcx roz
 %.map: %.pcx mortimer
 	./mortimer $<
 
-archetype.o: data/retsyn_fly.raw data/retsyn_bump.raw data/retsyn_die.raw data/retsyn_win.raw data/rudolph_fly.raw data/rudolph_bump.raw data/rudolph_die.raw data/rudolph_win.raw data/alien_fly.raw data/alien_bump.raw data/alien_die.raw data/alien_win.raw data/octo_fly.raw data/octo_bump.raw data/octo_die.raw data/octo_win.raw data/pierce_fly.raw data/pierce_bump.raw data/pierce_die.raw data/pierce_win.raw data/greedy_fly.raw data/greedy_bump.raw data/greedy_die.raw data/greedy_win.raw data/myr_fly.raw data/myr_bump.raw data/myr_die.raw data/myr_win.raw data/randy_fly.raw data/randy_bump.raw data/randy_die.raw data/randy_win.raw data/monocle_fly.raw data/monocle_win.raw data/melville_fly.raw data/melville_bump.raw data/melville_die.raw data/melville_win.raw data/iceclown_fly.raw data/iceclown_bump.raw data/iceclown_die.raw data/iceclown_win.raw data/ball2.raw data/ball2e.raw data/sweatdrop.raw
+archetype.o: data/harvey_fly.raw data/harvey_bump.raw data/harvey_die.raw data/harvey_win.raw data/rudolph_fly.raw data/rudolph_bump.raw data/rudolph_die.raw data/rudolph_win.raw data/alien_fly.raw data/alien_bump.raw data/alien_die.raw data/alien_win.raw data/lopez_fly.raw data/lopez_bump.raw data/lopez_die.raw data/lopez_win.raw data/pierce_fly.raw data/pierce_bump.raw data/pierce_die.raw data/pierce_win.raw data/greedy_fly.raw data/greedy_bump.raw data/greedy_die.raw data/greedy_win.raw data/myr_fly.raw data/myr_bump.raw data/myr_die.raw data/myr_win.raw data/randy_fly.raw data/randy_bump.raw data/randy_die.raw data/randy_win.raw data/monocle_fly.raw data/monocle_win.raw data/melville_fly.raw data/melville_bump.raw data/melville_die.raw data/melville_win.raw data/iceclown_fly.raw data/iceclown_bump.raw data/iceclown_die.raw data/iceclown_win.raw data/sam_fly.raw data/sam_bump.raw data/sam_die.raw data/sam_win.raw data/ball2.raw data/ball2e.raw data/sweatdrop.raw
 
 title.o: data/title.map
 victory.o: data/victory.map

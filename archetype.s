@@ -16,22 +16,22 @@
         .global archetype_table, archetype_table_len
         .align 2
 archetype_table:
-        .asciz "Retsyn"
+        .asciz "Harvey"
         .balign 8
         .byte 40                @ strength
         .byte 50                @ stamina
         .byte 85                @ mass
         .byte 0
-        .byte PALETTE_BLUE, PALETTE_GREEN
+        .byte PALETTE_HARVEY_1, PALETTE_HARVEY_2
         .byte PALETTE_GOTH, PALETTE_BEARD
-        .word retsyn_fly, retsyn_bump, retsyn_die, retsyn_win
+        .word harvey_fly, harvey_bump, harvey_die, harvey_win
 
         .asciz "Rudolph"
         .byte 50                @ strength
         .byte 80                @ stamina
         .byte 100               @ mass
         .byte 0
-        .byte PALETTE_RED, PALETTE_YELLOW
+        .byte PALETTE_RUDOLPH_1, PALETTE_RUDOLPH_2
         .byte PALETTE_GREEN, PALETTE_BLUE
         .word rudolph_fly, rudolph_bump, rudolph_die, rudolph_win
 
@@ -41,19 +41,19 @@ archetype_table:
         .byte 50                @ stamina
         .byte 100               @ mass
         .byte 0
-        .byte PALETTE_BLUE, PALETTE_GREEN
+        .byte PALETTE_RALPH_1, PALETTE_RALPH_2
         .byte PALETTE_RED, PALETTE_PURPLE
         .word alien_fly, alien_bump, alien_die, alien_win
 
         .asciz "Lopez"
         .balign 8
-        .byte 80                @ strength
+        .byte 60                @ strength
         .byte 40                @ stamina
         .byte 140               @ mass
         .byte 0
-        .byte PALETTE_GREEN, PALETTE_CYAN
+        .byte PALETTE_LOPEZ_1, PALETTE_LOPEZ_2
         .byte PALETTE_BLUE, PALETTE_GREEN
-        .word octo_fly, octo_bump, octo_die, octo_win
+        .word lopez_fly, lopez_bump, lopez_die, lopez_win
 
         .asciz "Pierce"
         .balign 8
@@ -61,7 +61,7 @@ archetype_table:
         .byte 60                @ stamina
         .byte 100               @ mass
         .byte 0
-        .byte PALETTE_GOTH, PALETTE_BLUE
+        .byte PALETTE_PIERCE_1, PALETTE_PIERCE_2
         .byte PALETTE_BLUE, PALETTE_YELLOW
         .word pierce_fly, pierce_bump, pierce_die, pierce_win
 
@@ -71,7 +71,7 @@ archetype_table:
         .byte 50                @ stamina
         .byte 60                @ mass
         .byte 0
-        .byte PALETTE_PINK, PALETTE_BLUE
+        .byte PALETTE_GREEDY_1, PALETTE_GREEDY_2
         .byte PALETTE_GREEN, PALETTE_BLUE
         .word greedy_fly, greedy_bump, greedy_die, greedy_win
 
@@ -81,7 +81,7 @@ archetype_table:
         .byte 50                @ stamina
         .byte 70                @ mass
         .byte 0
-        .byte PALETTE_YELLOW, PALETTE_BLUE
+        .byte PALETTE_MYR_1, PALETTE_MYR_2
         .byte PALETTE_PINK, PALETTE_RED
         .word myr_fly, myr_bump, myr_die, myr_win
 
@@ -91,19 +91,19 @@ archetype_table:
         .byte 50                @ stamina
         .byte 110               @ mass
         .byte 0
-        .byte PALETTE_BEARD, PALETTE_GREEN
+        .byte PALETTE_RANDY_1, PALETTE_RANDY_2
         .byte PALETTE_YELLOW, PALETTE_PINK
         .word randy_fly, randy_bump, randy_die, randy_win
 
-        .asciz "Mono"
+        .asciz "Sam"
         .balign 8
-        .byte 90                @ strength
-        .byte 40                @ stamina
-        .byte 190               @ mass
+        .byte 55                @ strength
+        .byte 60                @ stamina
+        .byte 90                @ mass
         .byte 0
-        .byte PALETTE_PURPLE, PALETTE_PINK
+        .byte PALETTE_SAM_1, PALETTE_SAM_2
         .byte PALETTE_PINK, PALETTE_RED
-        .word monocle_fly, monocle_win, monocle_fly, monocle_win
+        .word sam_fly, sam_win, sam_fly, sam_win
 
         @@ Moby died in the Spinning Room
         .ascii "Melville"
@@ -111,7 +111,7 @@ archetype_table:
         .byte 1                 @ stamina
         .byte 100               @ mass
         .byte 0
-        .byte PALETTE_RED, PALETTE_GOTH
+        .byte PALETTE_MEL_1, PALETTE_MEL_2
         .byte PALETTE_BEARD, PALETTE_PINK
         .word melville_fly, melville_bump, melville_die, melville_win
 
@@ -125,6 +125,16 @@ archetype_table:
         .byte PALETTE_BLUE, PALETTE_GREEN
         .word iceclown_fly, iceclown_bump, iceclown_die, iceclown_win
 
+        .asciz "Monocl"
+        .balign 8
+        .byte 70                @ strength
+        .byte 40                @ stamina
+        .byte 190               @ mass
+        .byte 0
+        .byte PALETTE_PURPLE, PALETTE_PINK
+        .byte PALETTE_PINK, PALETTE_RED
+        .word monocle_fly, monocle_win, monocle_fly, monocle_win
+
 archetype_table_len:    .hword .-archetype_table
 
 @@@ Tile data
@@ -136,12 +146,12 @@ balloon_sprites: .incbin "data/ball2.raw"
         .incbin "data/sweatdrop.raw"
 balloon_sprites_end:
 
-        .local retsyn_fly, retsyn_bump, retsyn_die, retsyn_win
+        .local harvey_fly, harvey_bump, harvey_die, harvey_win
         .align 2
-retsyn_fly:     .incbin "data/retsyn_fly.raw"
-retsyn_bump:    .incbin "data/retsyn_bump.raw"
-retsyn_die:     .incbin "data/retsyn_die.raw"
-retsyn_win:     .incbin "data/retsyn_win.raw"
+harvey_fly:     .incbin "data/harvey_fly.raw"
+harvey_bump:    .incbin "data/harvey_bump.raw"
+harvey_die:     .incbin "data/harvey_die.raw"
+harvey_win:     .incbin "data/harvey_win.raw"
 
         .local rudolph_fly, rudolph_bump, rudolph_die, rudolph_win
         .align 2
@@ -157,12 +167,12 @@ alien_bump:    .incbin "data/alien_bump.raw"
 alien_die:     .incbin "data/alien_die.raw"
 alien_win:     .incbin "data/alien_win.raw"
 
-        .local octo_fly, octo_bump, octo_die, octo_win
+        .local lopez_fly, lopez_bump, lopez_die, lopez_win
         .align 2
-octo_fly:     .incbin "data/octo_fly.raw"
-octo_bump:    .incbin "data/octo_bump.raw"
-octo_die:     .incbin "data/octo_die.raw"
-octo_win:     .incbin "data/octo_win.raw"
+lopez_fly:     .incbin "data/lopez_fly.raw"
+lopez_bump:    .incbin "data/lopez_bump.raw"
+lopez_die:     .incbin "data/lopez_die.raw"
+lopez_win:     .incbin "data/lopez_win.raw"
 
         .local pierce_fly, pierce_bump, pierce_die, pierce_win
         .align 2
@@ -211,6 +221,13 @@ iceclown_bump:    .incbin "data/iceclown_bump.raw"
 iceclown_die:     .incbin "data/iceclown_die.raw"
 iceclown_win:     .incbin "data/iceclown_win.raw"
 
+        .local sam_fly, sam_bump, sam_die, sam_win
+        .align 2
+sam_fly:     .incbin "data/sam_fly.raw"
+sam_bump:    .incbin "data/sam_bump.raw"
+sam_die:     .incbin "data/sam_die.raw"
+sam_win:     .incbin "data/sam_win.raw"
+
         .global invariant_palette
 invariant_palette:
         @@ Invariant part
@@ -230,11 +247,14 @@ palette_goth:   .byte 0x00, 0x00, 0x00, 0x00, 0xad, 0x35, 0xf7, 0x5e
 
 palette_salmon: .hword 0x0008, 0x1070, 0x20f7, 0x317f
 palette_slate_blue: .hword 0x30c4, 0x49a9, 0x626f, 0x7b35
-        @@ extras until we have a full set
-        .byte 0x06, 0x00, 0x0d, 0x00, 0x13, 0x00, 0x1a, 0x00
-        .hword 0x00e0, 0x01e0, 0x02e0, 0x03e0
-        .byte 0x10, 0x1c, 0xb5, 0x38, 0x7a, 0x55, 0x3f, 0x72
-        .byte 0x09, 0x01, 0xd0, 0x01, 0x98, 0x02, 0x5f, 0x03
-        .byte 0x06, 0x00, 0x0d, 0x00, 0x13, 0x00, 0x1a, 0x00
-        .byte 0x06, 0x00, 0x0d, 0x00, 0x13, 0x00, 0x1a, 0x00
-        .hword 0x00e0, 0x01e0, 0x02e0, 0x03e0
+palette_harvey_1: .hword 0x1cc3, 0x3d46, 0x5dc8, 0x7e4b
+palette_harvey_2: .hword 0x1463, 0x28a5, 0x3d08, 0x4d6a
+ralph:  .hword 0x1c83, 0x3cc7, 0x5d2a, 0x7d6d, 0x1085, 0x1986, 0x2268, 0x2b69
+greedy: .hword 0x2463, 0x4128, 0x5dce, 0x7694, 0x0482, 0x0d63, 0x1645, 0x1f26
+lopez: .hword 0x14c3, 0x1dc7, 0x2aeb, 0x37ee, 0x2d68, 0x4e06, 0x62c4, 0x7762
+melville: .hword 0x0449, 0x0caf, 0x1516, 0x1d7c, 0x0c65, 0x0ca8, 0x10cb, 0x150d
+myr: .hword 0x10a9, 0x1550, 0x19f8, 0x1ebf, 0x28a8, 0x3cee, 0x5133, 0x6579
+pierce: .hword 0x1cc9, 0x34ec, 0x4d30, 0x6573, 0x00e0, 0x01e0, 0x02e0, 0x03e0
+randy: .hword 0x1908, 0x2dae, 0x4274, 0x571a, 0x10e4, 0x1d87, 0x2a2a, 0x32cd
+rudolph: .hword 0x1488, 0x18f0, 0x1d57, 0x25bf, 0x08e2, 0x15e6, 0x26e9, 0x33ec
+sam: .hword 0x0886, 0x0d0a, 0x158d, 0x1e11, 0x1d09, 0x35ce, 0x4e74, 0x6739

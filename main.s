@@ -126,8 +126,8 @@ levels:
         .byte CHAR_ICECLOWN
         .byte ARENA_LOZENGE
 
-        .byte PALETTE_GREEN
-        .byte PALETTE_YELLOW
+        .byte PALETTE_PURPLE
+        .byte PALETTE_RED
         .byte CHAR_MONOCLE
         .byte ARENA_VTUBE
 levels_end:

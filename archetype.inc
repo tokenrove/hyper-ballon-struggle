@@ -9,7 +9,7 @@
         .equ ARCHETYPE_T_ALTERNATE_PALETTE, 14
         .equ ARCHETYPE_T_FRAME_PTRS, 16
 
-        .equ CHAR_RETSYN, 0
+        .equ CHAR_HARVEY, 0
         .equ CHAR_RUDOLPH, 1
         .equ CHAR_RALPH, 2
         .equ CHAR_LOPEZ, 3
@@ -17,9 +17,10 @@
         .equ CHAR_LANA, 5
         .equ CHAR_MYR, 6
         .equ CHAR_RANDY, 7
-        .equ CHAR_MONOCLE, 8
+        .equ CHAR_SAM, 8
         .equ CHAR_MELVILLE, 9
         .equ CHAR_ICECLOWN, 10
+        .equ CHAR_MONOCLE, 11
 
         .equ PALETTE_BLUE, 0
         .equ PALETTE_GREEN, 1
@@ -32,3 +33,23 @@
         .equ PALETTE_GOTH, 8
         .equ PALETTE_SALMON, 9
         .equ PALETTE_SLATE_BLUE, 10
+        .equ PALETTE_HARVEY_1, 11
+        .equ PALETTE_HARVEY_2, 12
+        .equ PALETTE_RALPH_1, 13
+        .equ PALETTE_RALPH_2, 14
+        .equ PALETTE_GREEDY_1, 15
+        .equ PALETTE_GREEDY_2, 16
+        .equ PALETTE_LOPEZ_1, 17
+        .equ PALETTE_LOPEZ_2, 18
+        .equ PALETTE_MEL_1, 19
+        .equ PALETTE_MEL_2, 20
+        .equ PALETTE_MYR_1, 21
+        .equ PALETTE_MYR_2, 22
+        .equ PALETTE_PIERCE_1, 23
+        .equ PALETTE_PIERCE_2, 24
+        .equ PALETTE_RANDY_1, 25
+        .equ PALETTE_RANDY_2, 26
+        .equ PALETTE_RUDOLPH_1, 27
+        .equ PALETTE_RUDOLPH_2, 28
+        .equ PALETTE_SAM_1, 29
+        .equ PALETTE_SAM_2, 30
