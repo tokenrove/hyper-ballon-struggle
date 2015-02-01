@@ -33,7 +33,7 @@ archetype_table:
         .byte 0
         .byte PALETTE_RED, PALETTE_YELLOW
         .byte PALETTE_GREEN, PALETTE_BLUE
-        .word monk_fly, monk_bump, monk_die, monk_win
+        .word rudolph_fly, rudolph_bump, rudolph_die, rudolph_win
 
         .asciz "Ralph"
         .balign 8
@@ -132,12 +132,12 @@ retsyn_bump:    .incbin "data/retsyn_bump.raw"
 retsyn_die:     .incbin "data/retsyn_die.raw"
 retsyn_win:     .incbin "data/retsyn_win.raw"
 
-        .local monk_fly, monk_bump, monk_die, monk_win
+        .local rudolph_fly, rudolph_bump, rudolph_die, rudolph_win
         .align 2
-monk_fly:     .incbin "data/monk_fly.raw"
-monk_bump:    .incbin "data/monk_bump.raw"
-monk_die:     .incbin "data/monk_die.raw"
-monk_win:     .incbin "data/monk_win.raw"
+rudolph_fly:     .incbin "data/rudolph_fly.raw"
+rudolph_bump:    .incbin "data/rudolph_bump.raw"
+rudolph_die:     .incbin "data/rudolph_die.raw"
+rudolph_win:     .incbin "data/rudolph_win.raw"
 
         .local alien_fly, alien_bump, alien_die, alien_win
         .align 2
