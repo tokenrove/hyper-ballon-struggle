@@ -9,6 +9,9 @@ Advance.  This is actually a game that was written the weekend of July
 of the source are so far unavailable, so I've decided to work from
 this copy which seems to be a CVS checkout from early on Sunday.
 
+The source is released under the [[http://www.gnu.org/copyleft/gpl.html][GPLv3]], while the assets are released
+under [[https://creativecommons.org/licenses/by-sa/3.0/legalcode][CC-BY-SA]].
+
 ** Building
 
 On a Debian system, you can do this to get a suitable cross-compiler
